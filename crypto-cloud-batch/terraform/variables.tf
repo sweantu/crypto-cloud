@@ -15,3 +15,9 @@ variable "bucket_name" {
   type        = string
   default     = "pyspark-local-test-bucket"
 }
+
+variable "glue_database_name" {
+  description = "Glue database name for Iceberg testing"
+  type        = string
+  default     = "iceberg_local_test"
+}

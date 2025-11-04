@@ -42,3 +42,22 @@ resource "aws_s3_bucket_ownership_controls" "pyspark_local" {
     object_ownership = "BucketOwnerPreferred"
   }
 }
+
+# -----------------------------
+# DynamoDB table for Iceberg locking
+# -----------------------------
+resource "aws_dynamodb_table" "iceberg_lock_table" {
+  name         = "iceberg-lock-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "lock_key"
+
+  attribute {
+    name = "lock_key"
+    type = "S"
+  }
+
+  tags = {
+    Project     = "pyspark-local-test"
+    Environment = "dev"
+  }
+}
