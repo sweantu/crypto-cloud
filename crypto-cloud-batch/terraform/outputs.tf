@@ -1,11 +1,11 @@
-output "s3_bucket_name" {
-  value = aws_s3_bucket.pyspark_local.bucket
+output "data_lake_bucket_name" {
+  value = module.data-lake.data_lake_bucket_name
 }
 
-output "s3_bucket_arn" {
-  value = aws_s3_bucket.pyspark_local.arn
+output "data_lake_bucket_arn" {
+  value = module.data-lake.data_lake_bucket_arn
 }
 
-output "dynamodb_lock_table" {
-  value = aws_dynamodb_table.iceberg_lock_table.name
+output "data_lake_iceberg_lock_table_name" {
+  value = module.data-lake.data_lake_iceberg_lock_table_name
 }

@@ -1,63 +1,16 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
+data "aws_caller_identity" "current" {}
 
-  required_version = ">= 1.5.0"
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+  project_prefix = "${var.project}-${var.environment}-${local.account_id}"
 }
 
-provider "aws" {
-  region  = var.region
-  profile = var.profile
-}
+module "data-lake" {
+  source = "./modules/data-lake"
 
-# Create S3 bucket for local Spark test
-resource "aws_s3_bucket" "pyspark_local" {
-  bucket = var.bucket_name
-
-  tags = {
-    Project     = "pyspark-local-test"
-    Environment = "dev"
-  }
-}
-
-# Block public access
-resource "aws_s3_bucket_public_access_block" "pyspark_local" {
-  bucket = aws_s3_bucket.pyspark_local.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# (Optional) Enable bucket ownership for Spark/Hadoop compatibility
-resource "aws_s3_bucket_ownership_controls" "pyspark_local" {
-  bucket = aws_s3_bucket.pyspark_local.id
-
-  rule {
-    object_ownership = "BucketOwnerPreferred"
-  }
-}
-
-# -----------------------------
-# DynamoDB table for Iceberg locking
-# -----------------------------
-resource "aws_dynamodb_table" "iceberg_lock_table" {
-  name         = "iceberg-lock-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "lock_key"
-
-  attribute {
-    name = "lock_key"
-    type = "S"
-  }
-
-  tags = {
-    Project     = "pyspark-local-test"
-    Environment = "dev"
-  }
+  project               = var.project
+  environment           = var.environment
+  project_prefix        = local.project_prefix
+  bucket_name           = var.data_lake_bucket_name
+  iceberg_lock_table_name = var.data_lake_iceberg_lock_table_name
 }
