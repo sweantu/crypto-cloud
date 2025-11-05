@@ -14,3 +14,12 @@ module "data-lake" {
   bucket_name           = var.data_lake_bucket_name
   iceberg_lock_table_name = var.data_lake_iceberg_lock_table_name
 }
+
+module "landing-job" {
+  source = "./modules/landing-job"
+
+  project               = var.project
+  environment           = var.environment
+  project_prefix        = local.project_prefix
+  glue_scripts_bucket_name   = var.glue_scripts_bucket_name
+}

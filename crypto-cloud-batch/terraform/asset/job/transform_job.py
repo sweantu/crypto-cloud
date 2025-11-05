@@ -17,15 +17,46 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-project_prefix = "crypto-cloud-dev-583323753643"
-data_lake_bucket_name = "crypto-cloud-dev-583323753643-data-lake-bucket"
-data_lake_iceberg_lock_table_name = "crypto_cloud_dev_583323753643_iceberg_lock_table"
+project_prefix = "crypto-cloud-dev-650251698703"
+data_lake_bucket_name = "crypto-cloud-dev-650251698703-data-lake-bucket"
+data_lake_iceberg_lock_table_name = "crypto_cloud_dev_650251698703_iceberg_lock_table"
 data_prefix = project_prefix.replace("-", "_")
 
 landing_date = "2025-09-27"
 symbol = "ADAUSDT"
 
-spark = SparkSession.builder.appName("TransformZone").getOrCreate()  # type: ignore
+spark = (
+    SparkSession.builder.appName("TransformZone")  # type: ignore
+    .config(
+        "spark.jars.packages",
+        "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.6.1,"
+        "org.apache.iceberg:iceberg-aws-bundle:1.6.1,"
+        "org.apache.hadoop:hadoop-aws:3.3.4",
+    )
+    .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog")
+    .config(
+        "spark.sql.catalog.glue_catalog.catalog-impl",
+        "org.apache.iceberg.aws.glue.GlueCatalog",
+    )
+    .config(
+        "spark.sql.catalog.glue_catalog.warehouse", f"s3a://{data_lake_bucket_name}/"
+    )
+    .config(
+        "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
+    )
+    .config(
+        "spark.sql.catalog.glue_catalog.lock.table",
+        f"{data_lake_iceberg_lock_table_name}",
+    )
+    .config(
+        "spark.sql.extensions",
+        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+    )
+    .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
+    .config("spark.sql.defaultCatalog", "glue_catalog")
+    .config("spark.sql.session.timeZone", "UTC")
+    .getOrCreate()
+)
 
 
 output_path = f"s3a://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"

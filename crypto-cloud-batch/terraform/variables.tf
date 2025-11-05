@@ -33,3 +33,9 @@ variable "data_lake_iceberg_lock_table_name" {
   type        = string
   default     = "iceberg_lock_table"
 }
+
+variable "glue_scripts_bucket_name" {
+  description = "Name of the S3 bucket for Glue scripts"
+  type        = string
+  default     = "glue-scripts-bucket"
+}

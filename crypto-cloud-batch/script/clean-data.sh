@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # --- Assign variables ---
-project_prefix=${1:-crypto-cloud-dev-583323753643}
+project_prefix=${1:-crypto-cloud-dev-650251698703}
 echo "✅Project prefix: $project_prefix"
 
 db_list=$(aws glue get-databases --query "DatabaseList[].Name" --output text | tr '\t' '\n' | grep "${project_prefix//-/_}" || true)
