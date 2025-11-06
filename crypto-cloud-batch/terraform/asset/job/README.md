@@ -26,10 +26,16 @@ org.apache.iceberg:iceberg-aws-bundle:1.6.1,\
 org.apache.hadoop:hadoop-aws:3.3.4 \
   landing_job.py
 
-aws s3 cp glue.py s3://crypto-cloud-dev-650251698703-glue-scripts-bucket/job/landing_job.py
+aws s3 cp landing_job.py s3://crypto-cloud-dev-650251698703-glue-scripts-bucket/job/landing_job.py
 aws glue start-job-run \
   --job-name crypto-cloud-dev-650251698703-landing-job \
-  --arguments '{"--symbol":"BTCUSDT","--landing_date":"2025-11-05"}'
+  --arguments '{
+    "--symbol": "ADAUSDT",
+    "--landing_date": "2025-09-27",
+    "--project_prefix": "crypto-cloud-dev-650251698703",
+    "--data_lake_bucket_name": "crypto-cloud-dev-650251698703-data-lake-bucket",
+    "--data_lake_iceberg_lock_table_name": "crypto_cloud_dev_650251698703_iceberg_lock_table"
+  }'
 aws glue get-job-run \
   --job-name crypto-cloud-dev-650251698703-landing-job \
   --run-id jr_1234567890abcdef \

@@ -1,5 +1,7 @@
 import logging
+import sys
 
+from awsglue.utils import getResolvedOptions
 from pyspark.errors.exceptions.base import AnalysisException
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -17,13 +19,27 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-project_prefix = "crypto-cloud-dev-650251698703"
-data_lake_bucket_name = "crypto-cloud-dev-650251698703-data-lake-bucket"
-data_lake_iceberg_lock_table_name = "crypto_cloud_dev_650251698703_iceberg_lock_table"
+args = getResolvedOptions(
+    sys.argv,
+    [
+        "symbol",
+        "landing_date",
+        "project_prefix",
+        "data_lake_bucket_name",
+        "data_lake_iceberg_lock_table_name",
+    ],
+)
+symbol = args["symbol"]
+landing_date = args["landing_date"]
+project_prefix = args["project_prefix"]
+data_lake_bucket_name = args["data_lake_bucket_name"]
+data_lake_iceberg_lock_table_name = args["data_lake_iceberg_lock_table_name"]
 data_prefix = project_prefix.replace("-", "_")
-
-landing_date = "2025-09-27"
-symbol = "ADAUSDT"
+output_path = f"s3a://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
+transform_db = f"{data_prefix}_transform_db"
+klines_table = "klines"
+serving_db = f"{data_prefix}_serving_db"
+aggtrade_table = "aggtrades"
 
 spark = (
     SparkSession.builder.appName("TransformZone")  # type: ignore
@@ -58,11 +74,7 @@ spark = (
     .getOrCreate()
 )
 
-
-output_path = f"s3a://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
 df = spark.read.parquet(output_path)
-
-
 df = (
     df.withColumn("timestamp_date", F.from_unixtime(F.col("timestamp") / 1_000_000))
     .withColumn("timestamp_second", (F.col("timestamp") / 1_000_000).cast("long"))
@@ -75,14 +87,10 @@ df = (
 )
 
 
-transform_db = f"{data_prefix}_transform_db"
 spark.sql(f"""
 CREATE DATABASE IF NOT EXISTS {transform_db}
 LOCATION 's3a://{data_lake_bucket_name}/transform_zone/'
 """)
-
-
-aggtrade_table = "aggtrades"
 if table_exists(spark, transform_db, aggtrade_table):
     df.writeTo(f"{transform_db}.{aggtrade_table}").overwritePartitions()
     logger.info(
@@ -97,13 +105,10 @@ else:
     )
 
 
-serving_db = f"{data_prefix}_serving_db"
 spark.sql(f"""
 CREATE DATABASE IF NOT EXISTS {serving_db}
 LOCATION 's3a://{data_lake_bucket_name}/serving_zone/'
 """)
-
-
 sql_stmt = f"""
 select 
     group_id,
@@ -125,7 +130,6 @@ logger.info(f"SQL Statement:\n{sql_stmt}")
 df_kline = spark.sql(sql_stmt)
 
 
-klines_table = "klines"
 if table_exists(spark, serving_db, klines_table):
     df_kline.writeTo(f"{serving_db}.{klines_table}").overwritePartitions()
     logger.info(

@@ -56,6 +56,11 @@ resource "aws_glue_job" "landing_job" {
     "--enable-glue-datacatalog"          = "true"
     "--enable-continuous-cloudwatch-log" = "true"
     "--TempDir"                          = "s3://${aws_s3_bucket.glue_scripts.bucket}/temp/"
+    "--symbol"                            = "ADAUSDT"
+    "--landing_date"                      = "2025-09-27"
+    "--project_prefix"                    = var.project_prefix
+    "--data_lake_bucket_name"             = var.data_lake_bucket_name
+    "--data_lake_iceberg_lock_table_name" = var.data_lake_iceberg_lock_table_name
   }
 
   glue_version      = "5.0"

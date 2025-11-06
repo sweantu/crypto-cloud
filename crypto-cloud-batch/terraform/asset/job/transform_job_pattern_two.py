@@ -1,16 +1,30 @@
 import logging
+import sys
 
+from awsglue.utils import getResolvedOptions
 from py4j.protocol import Py4JJavaError
 from pyspark.errors.exceptions.base import AnalysisException
 from pyspark.sql import SparkSession, types
 
-project_prefix = "crypto-cloud-dev-650251698703"
-data_lake_bucket_name = "crypto-cloud-dev-650251698703-data-lake-bucket"
-data_lake_iceberg_lock_table_name = "crypto_cloud_dev_650251698703_iceberg_lock_table"
+args = getResolvedOptions(
+    sys.argv,
+    [
+        "symbol",
+        "landing_date",
+        "project_prefix",
+        "data_lake_bucket_name",
+        "data_lake_iceberg_lock_table_name",
+    ],
+)
+symbol = args["symbol"]
+landing_date = args["landing_date"]
+project_prefix = args["project_prefix"]
+data_lake_bucket_name = args["data_lake_bucket_name"]
+data_lake_iceberg_lock_table_name = args["data_lake_iceberg_lock_table_name"]
 data_prefix = project_prefix.replace("-", "_")
-
-landing_date = "2025-09-27"
-symbol = "ADAUSDT"
+serving_db = f"{data_prefix}_serving_db"
+klines_table = "klines"
+pattern_two_table = "pattern_two"
 
 spark = (
     SparkSession.builder.appName("TransformZone Pattern Two")  # type: ignore
@@ -123,10 +137,6 @@ def make_ema_in_chunks(prev_ema7, prev_ema20):
 
 
 logger.info(f"Transforming symbol={symbol} for date={landing_date}")
-
-
-serving_db = f"{data_prefix}_serving_db"
-klines_table = "klines"
 sql_stmt = f"""
 select * from {serving_db}.{klines_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
@@ -136,9 +146,7 @@ df_sorted = (
     .coalesce(1)  # one partition, not shuffle
     .sortWithinPartitions("group_id")
 )
-
 logger.info(f"Input rows: {df_sorted.count()}")
-
 
 schema = types.StructType(
     [
@@ -149,7 +157,6 @@ schema = types.StructType(
 )
 
 
-pattern_two_table = "pattern_two"
 if table_exists(spark, serving_db, pattern_two_table):
     sql_stmt = f"""
     select ema7, ema20 from {serving_db}.{pattern_two_table}
@@ -169,8 +176,6 @@ df = df_sorted.mapInPandas(ema_in_chunks_with_state, schema)
 
 
 df.createOrReplaceTempView("temp")
-
-
 df = spark.sql("""
 with cte as (
     select
@@ -216,7 +221,6 @@ select
     end as pattern
 from cte
 """)
-
 logger.info(f"Output rows: {df.count()}")
 
 

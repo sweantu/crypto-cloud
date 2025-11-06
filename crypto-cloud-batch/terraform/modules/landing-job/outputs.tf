@@ -9,3 +9,7 @@ output "glue_scripts_bucket_arn" {
 output "landing_job_name" {
   value = aws_glue_job.landing_job.name
 }
+
+output "glue_job_role_arn" {
+  value = aws_iam_role.glue_job_role.arn
+}
