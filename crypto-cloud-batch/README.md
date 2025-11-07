@@ -30,4 +30,10 @@ for tbl in $(aws glue get-tables --database-name iceberg_local_test \
   aws glue delete-table --database-name iceberg_local_test --name $tbl
 done
 aws glue delete-database --name iceberg_local_test
+
+aws ecs describe-tasks \
+  --cluster grafana-cluster \
+  --tasks $(aws ecs list-tasks --cluster grafana-cluster --query "taskArns[0]" --output text) \
+  --query "tasks[0].attachments[0].details[?name=='publicIPv4Address'].value" \
+  --output text
 ```

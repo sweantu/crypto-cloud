@@ -33,3 +33,23 @@ output "transform_job_name" {
 output "transform_job_name_pattern_two" {
   value = module.transform-job-pattern-two.transform_job_name_pattern_two
 }
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "public_subnet_ids" {
+  value = module.vpc.public_subnet_ids
+}
+
+output "grafana_cluster_name" {
+  value = module.grafana.grafana_cluster_name
+}
+
+output "grafana_efs_id" {
+  value = module.grafana.grafana_efs_id
+}
+
+output "grafana_security_group" {
+  value = module.grafana.grafana_security_group
+}

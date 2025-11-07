@@ -1,8 +1,13 @@
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 data "aws_caller_identity" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
   project_prefix = "${var.project}-${var.environment}-${local.account_id}"
+  azs = slice(data.aws_availability_zones.available.names, 0, var.az_count)
 }
 
 module "data-lake" {
@@ -48,4 +53,24 @@ module "transform-job-pattern-two" {
   glue_job_role_arn     = module.landing-job.glue_job_role_arn
   data_lake_bucket_name = module.data-lake.data_lake_bucket_name
   data_lake_iceberg_lock_table_name = module.data-lake.data_lake_iceberg_lock_table_name
+}
+
+module "vpc" {
+  source = "./modules/vpc"
+
+  project               = var.project
+  environment           = var.environment
+  project_prefix        = local.project_prefix
+  vpc_cidr = var.vpc_cidr
+  azs      = local.azs
+}
+
+module "grafana" {
+  source = "./modules/grafana"
+  
+  project               = var.project
+  environment           = var.environment
+  project_prefix        = local.project_prefix
+  vpc_id               = module.vpc.vpc_id
+  public_subnet_ids    = module.vpc.public_subnet_ids
 }
