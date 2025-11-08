@@ -116,9 +116,18 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+resource "aws_iam_role_policy_attachment" "ecs_execution_policies" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  ])
   role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  policy_arn = each.key
+}
+
+resource "aws_cloudwatch_log_group" "grafana_logs" {
+  name              = "/ecs/grafana"
+  retention_in_days = 7
 }
 
 # -------------------
@@ -131,6 +140,7 @@ resource "aws_ecs_task_definition" "grafana_task" {
   cpu                      = "512"
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
@@ -146,7 +156,7 @@ resource "aws_ecs_task_definition" "grafana_task" {
       environment = [
         { name = "GF_SECURITY_ADMIN_USER", value = "admin" },
         { name = "GF_SECURITY_ADMIN_PASSWORD", value = "admin" },
-        { name = "GF_INSTALL_PLUGINS", value = "volkovlabs-echarts-panel" }
+        { name = "GF_INSTALL_PLUGINS", value = "volkovlabs-echarts-panel" },
       ]
       mountPoints = [
         {
@@ -154,6 +164,14 @@ resource "aws_ecs_task_definition" "grafana_task" {
           containerPath = "/var/lib/grafana"
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.grafana_logs.name
+          awslogs-region        = "ap-southeast-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 
@@ -174,11 +192,13 @@ resource "aws_ecs_task_definition" "grafana_task" {
 # ECS Service
 # -------------------
 resource "aws_ecs_service" "grafana_service" {
-  name            = "grafana-service"
-  cluster         = aws_ecs_cluster.grafana_cluster.id
-  task_definition = aws_ecs_task_definition.grafana_task.arn
-  desired_count   = 0
-  launch_type     = "FARGATE"
+  name                   = "grafana-service"
+  cluster                = aws_ecs_cluster.grafana_cluster.id
+  task_definition        = aws_ecs_task_definition.grafana_task.arn
+  desired_count          = 0
+  launch_type            = "FARGATE"
+  enable_execute_command = true
+  platform_version       = "LATEST"
 
   network_configuration {
     subnets          = [var.public_subnet_ids[0]]
@@ -187,6 +207,6 @@ resource "aws_ecs_service" "grafana_service" {
   }
 
   depends_on = [
-    aws_efs_access_point.grafana_ap
+    aws_efs_access_point.grafana_ap, aws_cloudwatch_log_group.grafana_logs
   ]
 }

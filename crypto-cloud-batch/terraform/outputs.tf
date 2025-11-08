@@ -46,10 +46,18 @@ output "grafana_cluster_name" {
   value = module.grafana.grafana_cluster_name
 }
 
-output "grafana_efs_id" {
-  value = module.grafana.grafana_efs_id
-}
-
 output "grafana_security_group" {
   value = module.grafana.grafana_security_group
+}
+
+output "grafana_service_name" {
+  value = module.grafana.grafana_service_name
+}
+
+output "athena_workgroup_name" {
+  value = module.athena.athena_workgroup_name
+}
+
+output "athena_result_path" {
+  value = module.athena.athena_result_path
 }
