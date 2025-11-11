@@ -96,3 +96,12 @@ module "python_exec" {
   project           = var.project
   environment       = var.environment
 }
+
+module "airflow" {
+  source = "./modules/airflow"
+
+  project_prefix                       = local.project_prefix
+  vpc_id                               = module.vpc.vpc_id
+  public_subnet_ids                    = module.vpc.public_subnet_ids
+  grafana_ecs_task_execution_role_name = module.grafana.ecs_task_execution_role_name
+}

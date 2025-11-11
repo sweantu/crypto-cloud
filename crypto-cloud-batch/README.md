@@ -56,6 +56,14 @@ aws ecs execute-command \
   --interactive \
   --command "bash"
 
+aws ecs describe-tasks \
+  --cluster crypto-cloud-dev-650251698703-airflow-cluster \
+  --tasks 24061f25cc124d2f8bc37f41109b8734 \
+  --query "tasks[].containers[].{Name:name, LastStatus:lastStatus, ExitCode:exitCode, Reason:reason}"
+
 # read log container
 aws logs tail /ecs/grafana --follow
+
+make build && make push
+create database airflow;
 ```

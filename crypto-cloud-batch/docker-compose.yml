@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+
+  airflow:
+    # image: airflow-local
+    build:
+      context: .
+      dockerfile: docker/airflow.Dockerfile
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: Jers0E9_wUUeAcywlKdthfytgqpiO7QsGfk0GMiYwjw=
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "10"
+      AIRFLOW__CORE__DEFAULT_TIMEZONE: "UTC"
+    ports:
+      - "8082:8080"
+    depends_on:
+      - postgres
+    volumes:
+      - ~/.aws:/home/airflow/.aws:ro

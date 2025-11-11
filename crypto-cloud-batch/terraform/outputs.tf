@@ -61,3 +61,7 @@ output "athena_workgroup_name" {
 output "athena_result_path" {
   value = module.athena.athena_result_path
 }
+
+output "airflow_db_endpoint" {
+  value = module.airflow.airflow_db_endpoint
+}
