@@ -66,4 +66,13 @@ aws logs tail /ecs/grafana --follow
 
 make build && make push
 create database airflow;
+
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/Kinesis \
+  --metric-name IncomingRecords \
+  --dimensions Name=StreamName,Value=crypto-cloud-dev-650251698703-kinesis-stream \
+  --start-time 2025-11-12T00:00:00Z \
+  --end-time 2025-11-12T23:59:59Z \
+  --period 3600 \
+  --statistics Sum
 ```

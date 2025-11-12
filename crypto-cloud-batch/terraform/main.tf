@@ -105,3 +105,11 @@ module "airflow" {
   public_subnet_ids                    = module.vpc.public_subnet_ids
   grafana_ecs_task_execution_role_name = module.grafana.ecs_task_execution_role_name
 }
+
+# module "kinesis" {
+#   source = "./modules/kinesis"
+
+#   project_prefix = local.project_prefix
+#   environment    = var.environment
+#   project        = var.project
+# }

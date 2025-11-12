@@ -1,0 +1,130 @@
+import csv
+import json
+import subprocess
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+import boto3
+
+
+def delivery_report(err, record_info):
+    if err is not None:
+        print(f"❌ Delivery failed: {err}")
+    else:
+        print(
+            f"✅ Delivered to shard {record_info['ShardId']} Seq {record_info['SequenceNumber']}"
+        )
+
+
+def delivery_records_report(err, res):
+    if err is not None:
+        print(f"❌ Delivery failed: {err}")
+    else:
+        succeeded_count = len(res["Records"]) - res["FailedRecordCount"]
+        failed_count = res["FailedRecordCount"]
+        print(f"✅ Delivered {succeeded_count} records, {failed_count} failed records")
+
+
+class AggTrade:
+    def __init__(self, row: list[str], symbol: str) -> None:
+        self.agg_trade_id = int(row[0])
+        self.price = float(row[1])
+        self.quantity = float(row[2])
+        self.first_trade_id = int(row[3])
+        self.last_trade_id = int(row[4])
+        self.ts_int = int(row[5])
+        self.is_buyer_maker = row[6].strip().lower() == "true"
+        self.is_best_match = row[7].strip().lower() == "true"
+        self.symbol = symbol
+
+
+def put_record_safe(kinesis_client, stream_name, data, partition_key, callback):
+    """Send one record safely with error handling."""
+    try:
+        response = kinesis_client.put_record(
+            StreamName=stream_name,
+            Data=data.encode("utf-8"),
+            PartitionKey=partition_key,
+        )
+        callback(None, response)
+    except Exception as e:
+        callback(e, None)
+
+
+def put_records_safe(kinesis_client, stream_name, records, callback):
+    """Send multiple records safely with error handling."""
+    try:
+        response = kinesis_client.put_records(
+            StreamName=stream_name,
+            Records=[
+                {
+                    "Data": record["data"].encode("utf-8"),
+                    "PartitionKey": record["partition_key"],
+                }
+                for record in records
+            ],
+        )
+        callback(None, response)
+    except Exception as e:
+        callback(e, None)
+
+
+def produce_messages(stream_name: str, symbol: str, file_path: str) -> None:
+    symbol_to_partition = {"ADAUSDT": 0, "BTCUSDT": 1, "ETHUSDT": 2, "BNBUSDT": 3}
+    kinesis_client = boto3.client("kinesis", region_name="ap-southeast-1")
+    num_lines = int(subprocess.check_output(["wc", "-l", file_path]).split()[0])
+    duration_in_seconds = 90
+    t_start = time.time()
+    with open(
+        file_path,
+        newline="",
+        encoding="utf-8",
+    ) as f:
+        reader = csv.reader(f)
+        records = []
+        for i, row in enumerate(reader, 1):
+            try:
+                msg = json.dumps(AggTrade(row, symbol).__dict__)
+                records.append({"data": msg, "partition_key": symbol})
+                if i % int(num_lines / duration_in_seconds) == 0 or i == num_lines:
+                    put_records_safe(
+                        kinesis_client, stream_name, records, delivery_records_report
+                    )
+                    print(
+                        f"Produced {i} messages for {symbol} partition {symbol_to_partition[symbol]} so far..."
+                    )
+                    records = []
+                    time.sleep(1)
+            except Exception as e:
+                print(f"❌ Exception while producing message: {i}, error: {e}")
+
+    t_end = time.time()
+    print(f"Time taken to produce {num_lines} messages: {t_end - t_start:.2f} seconds")
+    print("All messages have been produced.")
+
+
+if __name__ == "__main__":
+    stream_name = "crypto-cloud-dev-650251698703-kinesis-stream"
+    symbols = ["ADAUSDT"]
+    # symbols = ["ADAUSDT", "BTCUSDT", "ETHUSDT", "BNBUSDT"]
+    t_start_all = time.time()
+    with ThreadPoolExecutor() as executor:
+        for i in range(1, 2):
+            t_start_round = time.time()
+            file_paths = [
+                f"./input/{symbol}-aggTrades-2025-09-{26 + i}.csv" for symbol in symbols
+            ]
+            futures = [
+                executor.submit(produce_messages, stream_name, symbol, file_path)
+                for symbol, file_path in zip(symbols, file_paths)
+            ]
+            for future in futures:
+                future.result()
+            t_end_round = time.time()
+            print(
+                f"Time taken for round {i + 1}: {t_end_round - t_start_round:.2f} seconds"
+            )
+            print(f"Completed round {i + 1}/3")
+    t_end_all = time.time()
+    print(f"Total time taken: {t_end_all - t_start_all:.2f} seconds")
+    print("All rounds completed.")

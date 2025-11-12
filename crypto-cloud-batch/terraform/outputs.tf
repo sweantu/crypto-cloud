@@ -65,3 +65,11 @@ output "athena_result_path" {
 output "airflow_db_endpoint" {
   value = module.airflow.airflow_db_endpoint
 }
+
+output "stream_name" {
+  value = module.kinesis.stream_name
+}
+
+output "stream_arn" {
+  value = module.kinesis.stream_arn
+}
