@@ -66,10 +66,14 @@ output "airflow_db_endpoint" {
   value = module.airflow.airflow_db_endpoint
 }
 
-output "stream_name" {
-  value = module.kinesis.stream_name
-}
+# output "stream_name" {
+#   value = module.kinesis.stream_name
+# }
 
-output "stream_arn" {
-  value = module.kinesis.stream_arn
-}
+# output "stream_arn" {
+#   value = module.kinesis.stream_arn
+# }
+
+# output "clickhouse_public_ip" {
+#   value = module.clickhouse.clickhouse_public_ip
+# }

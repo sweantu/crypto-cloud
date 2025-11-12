@@ -113,3 +113,13 @@ module "airflow" {
 #   environment    = var.environment
 #   project        = var.project
 # }
+
+# module "clickhouse" {
+#   source = "./modules/clickhouse"
+
+#   project        = var.project
+#   environment    = var.environment
+#   project_prefix = local.project_prefix
+#   vpc_id         = module.vpc.vpc_id
+#   subnet_id      = element(module.vpc.public_subnet_ids, 0)
+# }

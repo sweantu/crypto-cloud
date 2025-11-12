@@ -75,4 +75,10 @@ aws cloudwatch get-metric-statistics \
   --end-time 2025-11-12T23:59:59Z \
   --period 3600 \
   --statistics Sum
+
+clickhouse_public_ip=""
+rsync -avz -e "ssh -i ~/.ssh/sweantu" clickhouse/ ubuntu@${clickhouse_public_ip}:/home/ubuntu/clickhouse/
+ssh -i ~/.ssh/sweantu ubuntu@${clickhouse_public_ip}
+docker exec clickhouse clickhouse-client --user default --password 123456 --database testdb   --query "SHOW TABLES;"
+sudo tail -f /var/log/cloud-init-output.log
 ```
