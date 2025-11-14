@@ -77,3 +77,11 @@ output "airflow_db_endpoint" {
 # output "clickhouse_public_ip" {
 #   value = module.clickhouse.clickhouse_public_ip
 # }
+
+# output "stream_names_lists" {
+#   value = [for k, v in module.kinesis.stream_names : v]
+# }
+
+# output "stream_arns_list" {
+#   value = [for k, v in module.kinesis.stream_arns : v]
+# }

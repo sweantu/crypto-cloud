@@ -123,3 +123,12 @@ module "airflow" {
 #   vpc_id         = module.vpc.vpc_id
 #   subnet_id      = element(module.vpc.public_subnet_ids, 0)
 # }
+
+module "flink" {
+  source = "./modules/flink"
+
+  project_prefix = local.project_prefix
+  environment    = var.environment
+  project        = var.project
+  # clickhouse_public_ip = module.clickhouse.clickhouse_public_ip
+}

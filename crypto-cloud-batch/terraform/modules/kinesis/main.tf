@@ -10,9 +10,43 @@ variable "retention_hours" {
   default = 24
 }
 
-resource "aws_kinesis_stream" "crypto_stream" {
-  name = "${var.project_prefix}-kinesis-stream"
-  #   shard_count      = var.shard_count
+# resource "aws_kinesis_stream" "crypto_stream" {
+#   name             = "${var.project_prefix}-kinesis-stream"
+#   shard_count      = var.shard_count
+#   retention_period = var.retention_hours
+
+#   shard_level_metrics = [
+#     "IncomingBytes",
+#     "OutgoingBytes",
+#     "IteratorAgeMilliseconds",
+#   ]
+
+#   stream_mode_details {
+#     # stream_mode = "ON_DEMAND" # pay per request (simpler & cheaper for small scale)
+#     stream_mode = "PROVISIONED"
+#   }
+
+#   tags = {
+#     Project     = var.project
+#     Environment = var.environment
+#   }
+# }
+
+# output "stream_name" {
+#   value = aws_kinesis_stream.crypto_stream.name
+# }
+
+# output "stream_arn" {
+#   value = aws_kinesis_stream.crypto_stream.arn
+# }
+
+resource "aws_kinesis_stream" "crypto_stream_example" {
+  for_each = toset([
+    "ExampleInputStream",
+    "ExampleOutputStream",
+  ])
+  name             = each.key
+  shard_count      = var.shard_count
   retention_period = var.retention_hours
 
   shard_level_metrics = [
@@ -22,7 +56,8 @@ resource "aws_kinesis_stream" "crypto_stream" {
   ]
 
   stream_mode_details {
-    stream_mode = "ON_DEMAND" # pay per request (simpler & cheaper for small scale)
+    # stream_mode = "ON_DEMAND" # pay per request (simpler & cheaper for small scale)
+    stream_mode = "PROVISIONED"
   }
 
   tags = {
@@ -31,10 +66,10 @@ resource "aws_kinesis_stream" "crypto_stream" {
   }
 }
 
-output "stream_name" {
-  value = aws_kinesis_stream.crypto_stream.name
+output "stream_names" {
+  value = { for k, v in aws_kinesis_stream.crypto_stream_example : k => v.name }
 }
 
-output "stream_arn" {
-  value = aws_kinesis_stream.crypto_stream.arn
+output "stream_arns" {
+  value = { for k, v in aws_kinesis_stream.crypto_stream_example : k => v.arn }
 }
