@@ -71,7 +71,7 @@ def upload_to_s3(bucket_name, file_path):
     s3_key = f"raw_zone/{os.path.basename(file_path)}"
     s3.upload_file(file_path, bucket_name, s3_key)
     logger.info(f"Uploaded to s3://{bucket_name}/{s3_key}")
-    return f"s3a://{bucket_name}/{s3_key}"
+    return f"s3://{bucket_name}/{s3_key}"
 
 
 script_dir = "/tmp"
@@ -101,7 +101,7 @@ spark = (
         "org.apache.iceberg.aws.glue.GlueCatalog",
     )
     .config(
-        "spark.sql.catalog.glue_catalog.warehouse", f"s3a://{data_lake_bucket_name}/"
+        "spark.sql.catalog.glue_catalog.warehouse", f"s3://{data_lake_bucket_name}/"
     )
     .config(
         "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
@@ -142,7 +142,7 @@ df = df.withColumn("ingest_date", F.current_date()).withColumn(
     "ingest_timestamp", F.current_timestamp()
 )
 
-output_path = f"s3a://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
+output_path = f"s3://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
 df.write.mode("overwrite").parquet(output_path)
 logger.info(f"Parquet written to: {output_path}")
 

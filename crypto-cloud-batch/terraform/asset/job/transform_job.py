@@ -35,7 +35,7 @@ project_prefix = args["project_prefix"]
 data_lake_bucket_name = args["data_lake_bucket_name"]
 data_lake_iceberg_lock_table_name = args["data_lake_iceberg_lock_table_name"]
 data_prefix = project_prefix.replace("-", "_")
-output_path = f"s3a://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
+output_path = f"s3://{data_lake_bucket_name}/landing_zone/spot/daily/aggTrades/{symbol}/{landing_date}"
 transform_db = f"{data_prefix}_transform_db"
 klines_table = "klines"
 serving_db = f"{data_prefix}_serving_db"
@@ -55,7 +55,7 @@ spark = (
         "org.apache.iceberg.aws.glue.GlueCatalog",
     )
     .config(
-        "spark.sql.catalog.glue_catalog.warehouse", f"s3a://{data_lake_bucket_name}/"
+        "spark.sql.catalog.glue_catalog.warehouse", f"s3://{data_lake_bucket_name}/"
     )
     .config(
         "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
@@ -89,7 +89,7 @@ df = (
 
 spark.sql(f"""
 CREATE DATABASE IF NOT EXISTS {transform_db}
-LOCATION 's3a://{data_lake_bucket_name}/transform_zone/'
+LOCATION 's3://{data_lake_bucket_name}/transform_zone/'
 """)
 if table_exists(spark, transform_db, aggtrade_table):
     df.writeTo(f"{transform_db}.{aggtrade_table}").overwritePartitions()
@@ -107,7 +107,7 @@ else:
 
 spark.sql(f"""
 CREATE DATABASE IF NOT EXISTS {serving_db}
-LOCATION 's3a://{data_lake_bucket_name}/serving_zone/'
+LOCATION 's3://{data_lake_bucket_name}/serving_zone/'
 """)
 sql_stmt = f"""
 select 

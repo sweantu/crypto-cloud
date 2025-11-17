@@ -40,7 +40,7 @@ spark = (
         "org.apache.iceberg.aws.glue.GlueCatalog",
     )
     .config(
-        "spark.sql.catalog.glue_catalog.warehouse", f"s3a://{data_lake_bucket_name}/"
+        "spark.sql.catalog.glue_catalog.warehouse", f"s3://{data_lake_bucket_name}/"
     )
     .config(
         "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
