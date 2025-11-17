@@ -76,5 +76,7 @@ aws cloudwatch get-metric-statistics \
   --period 3600 \
   --statistics Sum
 
+# Run one-time shell
+docker run -it --entrypoint bash <image>
 
 ```
