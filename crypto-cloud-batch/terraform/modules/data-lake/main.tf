@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "data_lake_bucket" {
-  bucket = "${var.project_prefix}-${var.bucket_name}"
+  bucket        = "${var.project_prefix}-${var.bucket_name}"
+  force_destroy = true
 
   tags = {
     Project     = var.project

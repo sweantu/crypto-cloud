@@ -1,6 +1,10 @@
 resource "aws_athena_workgroup" "crypto_dev" {
   name  = "${var.project_prefix}-athena-wg"
   state = "ENABLED"
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [state, configuration]
+  }
 
   configuration {
     enforce_workgroup_configuration = true

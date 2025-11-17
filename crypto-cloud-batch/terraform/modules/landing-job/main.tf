@@ -1,7 +1,8 @@
 
 # --- S3 bucket for Glue scripts ---
 resource "aws_s3_bucket" "glue_scripts" {
-  bucket = "${var.project_prefix}-${var.glue_scripts_bucket_name}"
+  bucket        = "${var.project_prefix}-${var.glue_scripts_bucket_name}"
+  force_destroy = true
 
   tags = {
     Project     = var.project
@@ -52,10 +53,10 @@ resource "aws_glue_job" "landing_job" {
   }
 
   default_arguments = {
-    "--job-language"                     = "python"
-    "--enable-glue-datacatalog"          = "true"
-    "--enable-continuous-cloudwatch-log" = "true"
-    "--TempDir"                          = "s3://${aws_s3_bucket.glue_scripts.bucket}/temp/"
+    "--job-language"                      = "python"
+    "--enable-glue-datacatalog"           = "true"
+    "--enable-continuous-cloudwatch-log"  = "true"
+    "--TempDir"                           = "s3://${aws_s3_bucket.glue_scripts.bucket}/temp/"
     "--symbol"                            = "ADAUSDT"
     "--landing_date"                      = "2025-09-27"
     "--project_prefix"                    = var.project_prefix

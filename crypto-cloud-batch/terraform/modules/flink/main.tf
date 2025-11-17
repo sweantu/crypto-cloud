@@ -18,8 +18,8 @@ variable "job_key" {
 # S3 bucket for job scripts
 # -------------------------
 resource "aws_s3_bucket" "flink_scripts" {
-  bucket = "${var.project_prefix}-${var.flink_scripts_bucket_name}"
-
+  bucket        = "${var.project_prefix}-${var.flink_scripts_bucket_name}"
+  force_destroy = true
   tags = {
     Project     = var.project
     Environment = var.environment
