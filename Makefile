@@ -25,3 +25,5 @@ describe-ec2:
 		--instance-ids $$($(INSTANCE_ID_CMD)) \
 		--query "Reservations[].Instances[]" \
 		--output table
+sync-clickhouse:
+	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" clickhouse/ ubuntu@$$($(INSTANCE_IP_CMD)):/home/ubuntu/clickhouse/
