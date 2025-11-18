@@ -19,3 +19,7 @@ output "vpc_id" {
 output "public_subnet_ids" {
   value = module.vpc.public_subnet_ids
 }
+
+output "data_lake_bucket_name" {
+  value = module.data_lake.data_lake_bucket_name
+}

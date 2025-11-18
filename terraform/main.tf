@@ -18,3 +18,9 @@ module "vpc" {
   project_prefix            = local.project_prefix
   project_prefix_underscore = local.project_prefix_underscore
 }
+
+module "data_lake" {
+  source                    = "./modules/data-lake"
+  project_prefix            = local.project_prefix
+  project_prefix_underscore = local.project_prefix_underscore
+}
