@@ -24,3 +24,20 @@ module "data_lake" {
   project_prefix            = local.project_prefix
   project_prefix_underscore = local.project_prefix_underscore
 }
+
+module "clickhouse" {
+  source                    = "./modules/clickhouse"
+  vpc_id                    = module.vpc.vpc_id
+  subnet_id                 = module.vpc.public_subnet_ids[0]
+  project_prefix            = local.project_prefix
+  project_prefix_underscore = local.project_prefix_underscore
+
+  clickhouse_db       = var.clickhouse_db
+  clickhouse_user     = var.clickhouse_user
+  clickhouse_password = var.clickhouse_password
+
+  clickhouse_instance_type = var.clickhouse_instance_type
+  clickhouse_ami_id        = var.clickhouse_ami_id
+
+  key_name = var.key_name
+}

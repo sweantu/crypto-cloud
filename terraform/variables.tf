@@ -1,29 +1,51 @@
 variable "region" {
-  type    = string
-  default = "ap-southeast-1"
+  type = string
 }
 
 variable "profile" {
-  type    = string
-  default = "default"
+  type = string
 }
 
 variable "project" {
-  type    = string
-  default = "crypto-cloud"
+  type = string
 }
 
 variable "environment" {
-  type    = string
-  default = "dev"
+  type = string
 }
 
 variable "vpc_cidr" {
-  type    = string
-  default = "10.0.0.0/16"
+  type = string
 }
 
 variable "az_count" {
-  type    = number
-  default = 2
+  type = number
+}
+
+variable "clickhouse_db" {
+  type      = string
+  sensitive = true
+}
+
+variable "clickhouse_user" {
+  type      = string
+  sensitive = true
+}
+
+variable "clickhouse_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "clickhouse_instance_type" {
+  type = string
+}
+
+variable "clickhouse_ami_id" {
+  type = string
+}
+
+variable "key_name" {
+  type      = string
+  sensitive = true
 }
