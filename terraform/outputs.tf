@@ -24,6 +24,6 @@ output "data_lake_bucket_name" {
   value = module.data_lake.data_lake_bucket_name
 }
 
-output "clickhouse_public_ip" {
-  value = module.clickhouse.clickhouse_public_ip
+output "clickhouse_instance_id" {
+  value = module.clickhouse.clickhouse_instance_id
 }
