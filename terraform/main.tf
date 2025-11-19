@@ -41,3 +41,11 @@ module "clickhouse" {
 
   key_name = var.key_name
 }
+
+module "athena" {
+  source = "./modules/athena"
+
+  project_prefix        = local.project_prefix
+  data_lake_bucket_name = module.data_lake.data_lake_bucket_name
+  athena_output_prefix  = "athena_output/"
+}
