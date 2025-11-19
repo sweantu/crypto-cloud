@@ -48,6 +48,13 @@ resource "aws_instance" "clickhouse" {
     volume_type = "gp3"
   }
 
+  lifecycle {
+    ignore_changes = [
+      private_ip,
+      associate_public_ip_address,
+    ]
+  }
+
   user_data = <<-EOF
 #!/usr/bin/env bash
 set -euxo pipefail
