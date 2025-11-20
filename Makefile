@@ -1,29 +1,105 @@
 TF_STATE=terraform/terraform.tfstate
-ins?=clickhouse
-
-INSTANCE_ID_CMD=terraform output -state=$(TF_STATE) -raw $(ins)_instance_id
-INSTANCE_IP_CMD=aws ec2 describe-instances --instance-ids $$($(INSTANCE_ID_CMD)) --query "Reservations[0].Instances[0].PublicIpAddress" --output text
-
+TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
 
 ssh:
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$($(INSTANCE_IP_CMD))
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
+	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
+	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip
 
 log-ec2:
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$($(INSTANCE_IP_CMD)) "sudo cat /var/log/cloud-init-output.log | tail -200"
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
+	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
+	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
 
 log-ec2-docker:
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$($(INSTANCE_IP_CMD)) "sudo docker logs $(ins) | tail -200"
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
+	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
+	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo docker logs $$ins | tail -200"
 
 stop-ec2:
-	aws ec2 stop-instances --instance-ids $$($(INSTANCE_ID_CMD))
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
+	aws ec2 stop-instances --instance-ids $$instance_id
 
 start-ec2:
-	aws ec2 start-instances --instance-ids $$($(INSTANCE_ID_CMD))
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
+	aws ec2 start-instances --instance-ids $$instance_id
 
 describe-ec2:
+	@ins="$(ins)"; \
+	[ -z "$$ins" ] && ins="clickhouse"; \
+	echo "ins=$$ins" ; \
+	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	aws ec2 describe-instances \
-		--instance-ids $$($(INSTANCE_ID_CMD)) \
+		--instance-ids "$$instance_id" \
 		--query "Reservations[].Instances[]" \
 		--output table
+
 sync-clickhouse:
-	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" clickhouse/ ubuntu@$$($(INSTANCE_IP_CMD)):/home/ubuntu/clickhouse/
+	@instance_id="$$( $(TERRAFORM_OUTPUT) clickhouse_instance_id )"; \
+	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
+	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
+
+jupyter-convert:
+	@path="$(path)"; \
+	[ -z "$$path" ] && path="example.ipynb"; \
+	echo "path=$$path" ; \
+	jupyter nbconvert --to script $$path
+
+spark-submit:
+	@script="$(script)"; \
+	[ -z "$$script" ] && script="spark_job.py"; \
+	echo "script=$$script" ; \
+	spark-submit \
+		--master "local[*]" \
+		--conf "spark.driver.memory=2g" \
+		--conf "spark.executor.memory=1g" \
+		--conf "spark.sql.shuffle.partitions=2" \
+		$$script
+
+sync-glue-scripts:
+	@glue_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) glue_scripts_bucket_name)"; \
+	aws s3 sync ./services/spark-jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete
+
+start-glue-job:
+	@job="$(job)"; \
+	[ -z "$$job" ] && job="landing_job"; \
+	echo "job=$$job" ; \
+	symbol="$(symbol)"; \
+	[ -z "$$symbol" ] && symbol="ADAUSDT"; \
+	echo "symbol=$$symbol" ; \
+	landing_date="$(landing_date)"; \
+	[ -z "$$landing_date" ] && landing_date="2025-09-27"; \
+	echo "landing_date=$$landing_date" ; \
+	job_name="$$($(TERRAFORM_OUTPUT) "$${job}_name")"; \
+	aws glue start-job-run \
+		--job-name $$job_name \
+		--arguments "{ \
+			\"--symbol\":\"$$symbol\", \
+			\"--landing_date\":\"$$landing_date\" \
+		}"
+
+get-glue-job-status:
+	@job_run_id="$(job_run_id)"; \
+	[ -z "$$job_run_id" ] && { echo "job_run_id is required" ; exit 1 ; } ; \
+	job="$(job)"; \
+	[ -z "$$job" ] && job="landing_job"; \
+	echo "job=$$job" ; \
+	job_name="$$($(TERRAFORM_OUTPUT) "$${job}_name")"; \
+	aws glue get-job-run \
+		--job-name $$job_name \
+		--run-id "$$job_run_id"

@@ -49,3 +49,13 @@ module "athena" {
   data_lake_bucket_name = module.data_lake.data_lake_bucket_name
   athena_output_prefix  = "athena_output/"
 }
+
+module "glue" {
+  source = "./modules/glue"
+
+  project_prefix            = local.project_prefix
+  project_prefix_underscore = local.project_prefix_underscore
+  data_lake_bucket_name     = module.data_lake.data_lake_bucket_name
+  iceberg_lock_table_name   = module.data_lake.iceberg_lock_table_name
+
+}

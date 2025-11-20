@@ -39,3 +39,19 @@ output "athena_wg_name" {
 output "athena_output_location" {
   value = module.athena.athena_output_location
 }
+
+output "glue_scripts_bucket_name" {
+  value = module.glue.glue_scripts_bucket_name
+}
+
+output "landing_job_name" {
+  value = module.glue.landing_job_name
+}
+
+output "transform_job_name" {
+  value = module.glue.transform_job_name
+}
+
+output "transform_job_pattern_two_name" {
+  value = module.glue.transform_job_pattern_two_name
+}
