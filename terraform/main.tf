@@ -59,3 +59,37 @@ module "glue" {
   iceberg_lock_table_name   = module.data_lake.iceberg_lock_table_name
 
 }
+
+module "ecr" {
+  source = "./modules/ecr"
+
+  project_prefix = local.project_prefix
+}
+
+module "ecs" {
+  source = "./modules/ecs"
+
+  project_prefix = local.project_prefix
+}
+
+module "airflow" {
+  source = "./modules/airflow"
+
+  project_prefix                 = local.project_prefix
+  region                         = var.region
+  vpc_id                         = module.vpc.vpc_id
+  public_subnet_ids              = module.vpc.public_subnet_ids
+  airflow_db_username            = var.airflow_db_username
+  airflow_db_password            = var.airflow_db_password
+  airflow_db_name                = var.airflow_db_name
+  airflow_fernet_key             = var.airflow_fernet_key
+  ecs_execution_role_arn         = module.ecs.ecs_execution_role_arn
+  ecs_cluster_id                 = module.ecs.ecs_cluster_id
+  airflow_repo_url               = module.ecr.airflow_repo_url
+  airflow_admin_username         = var.airflow_admin_username
+  airflow_admin_password         = var.airflow_admin_password
+  airflow_admin_email            = var.airflow_admin_email
+  landing_job_name               = module.glue.landing_job_name
+  transform_job_name             = module.glue.transform_job_name
+  transform_job_pattern_two_name = module.glue.transform_job_pattern_two_name
+}

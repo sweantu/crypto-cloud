@@ -55,3 +55,19 @@ output "transform_job_name" {
 output "transform_job_pattern_two_name" {
   value = module.glue.transform_job_pattern_two_name
 }
+
+output "airflow_repo_url" {
+  value = module.ecr.airflow_repo_url
+}
+
+output "airflow_db_endpoint" {
+  value = module.airflow.airflow_db_endpoint
+}
+
+output "airflow_db_identifier" {
+  value = module.airflow.airflow_db_identifier
+}
+
+output "airflow_ecs_service_name" {
+  value = module.airflow.airflow_ecs_service_name
+}

@@ -1,5 +1,6 @@
 TF_STATE=terraform/terraform.tfstate
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
+REGION=ap-southeast-1
 
 ssh:
 	@ins="$(ins)"; \
@@ -103,3 +104,44 @@ get-glue-job-status:
 	aws glue get-job-run \
 		--job-name $$job_name \
 		--run-id "$$job_run_id"
+
+push-airflow-image:
+	@airflow_repo_url="$$($(TERRAFORM_OUTPUT) airflow_repo_url)"; \
+	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
+	aws ecr get-login-password --region $(REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	docker buildx build \
+	  --platform linux/amd64 \
+	  -f airflow/Dockerfile \
+	  -t $$airflow_repo_url:latest \
+	  --push .
+
+log-ecs:
+	@task="$(task)"; \
+	[ -z "$$task" ] && task="airflow"; \
+	echo "task=$$task" ; \
+	aws logs tail /ecs/$$task | tail -200
+
+describe-rds:
+	@iden="$(iden)"; \
+	[ -z "$$iden" ] && iden="airflow_db"; \
+	echo "iden=$$iden" ; \
+	db_instance_identifier="$$($(TERRAFORM_OUTPUT) "$${iden}_identifier")"; \
+	aws rds describe-db-instances \
+		--db-instance-identifier "$$db_instance_identifier" \
+		--query "DBInstances[]" \
+		--output table
+
+stop-rds:
+	@iden="$(iden)"; \
+	[ -z "$$iden" ] && iden="airflow_db"; \
+	echo "iden=$$iden" ; \
+	db_instance_identifier="$$($(TERRAFORM_OUTPUT) "$${iden}_identifier")"; \
+	aws rds stop-db-instance --db-instance-identifier "$$db_instance_identifier"
+
+start-rds:
+	@iden="$(iden)"; \
+	[ -z "$$iden" ] && iden="airflow_db"; \
+	echo "iden=$$iden" ; \
+	db_instance_identifier="$$($(TERRAFORM_OUTPUT) "$${iden}_identifier")"; \
+	aws rds start-db-instance --db-instance-identifier "$$db_instance_identifier"

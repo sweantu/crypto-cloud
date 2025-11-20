@@ -49,3 +49,37 @@ variable "key_name" {
   type      = string
   sensitive = true
 }
+
+variable "airflow_db_username" {
+  type      = string
+  sensitive = true
+}
+variable "airflow_db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "airflow_db_name" {
+  type      = string
+  sensitive = true
+}
+
+variable "airflow_fernet_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "airflow_admin_username" {
+  type      = string
+  sensitive = true
+}
+
+variable "airflow_admin_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "airflow_admin_email" {
+  type      = string
+  sensitive = true
+}
