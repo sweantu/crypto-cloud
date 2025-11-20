@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Directory containing SQL scripts
 SQL_DIR=./init-scripts
 
-# Run each SQL file in order
 for f in $(ls "$SQL_DIR"/*.sql | sort); do
     echo "Running $f..."
-    docker exec -i clickhouse sh -c "clickhouse-client --user $CLICKHOUSE_USER --password $CLICKHOUSE_PASSWORD --database $CLICKHOUSE_DB" < "$f"
+
+    # Substitute environment variables THEN pipe to clickhouse-client
+    envsubst < "$f" \
+        | docker exec -i clickhouse clickhouse client \
+            --user "$CLICKHOUSE_USER" \
+            --password "$CLICKHOUSE_PASSWORD" \
+            --database "$CLICKHOUSE_DB" \
+            -n
 done
 
-echo "All scripts executed!"
+echo "All SQL scripts executed successfully!"
