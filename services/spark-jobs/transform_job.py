@@ -9,7 +9,7 @@ from pyspark.sql import functions as F
 
 def table_exists(spark: SparkSession, database: str, table: str) -> bool:
     try:
-        spark.catalog.getTable(f"{database}.{table}")
+        spark.catalog.getTable(f"glue_catalog.{database}.{table}")
         return True
     except AnalysisException:
         return False
@@ -55,14 +55,7 @@ spark = (
         "spark.sql.catalog.glue_catalog.catalog-impl",
         "org.apache.iceberg.aws.glue.GlueCatalog",
     )
-    .config("spark.sql.catalog.glue_catalog.warehouse", f"s3://{DATA_LAKE_BUCKET}/")
-    .config(
-        "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
-    )
     .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
-    .config("spark.sql.defaultCatalog", "glue_catalog")
-    .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
-    .config("spark.sql.session.timeZone", "UTC")
     .getOrCreate()
 )
 
@@ -80,25 +73,25 @@ df = (
 
 
 spark.sql(f"""
-CREATE DATABASE IF NOT EXISTS {transform_db}
+CREATE DATABASE IF NOT EXISTS glue_catalog.{transform_db}
 LOCATION 's3://{DATA_LAKE_BUCKET}/transform_zone/'
 """)
 if table_exists(spark, transform_db, aggtrade_table):
-    df.writeTo(f"{transform_db}.{aggtrade_table}").overwritePartitions()
+    df.writeTo(f"glue_catalog.{transform_db}.{aggtrade_table}").overwritePartitions()
     logger.info(
-        f"Table {transform_db}.{aggtrade_table} overwritten for {symbol} on {landing_date}"
+        f"Table glue_catalog.{transform_db}.{aggtrade_table} overwritten for {symbol} on {landing_date}"
     )
 else:
-    df.writeTo(f"{transform_db}.{aggtrade_table}").tableProperty(
+    df.writeTo(f"glue_catalog.{transform_db}.{aggtrade_table}").tableProperty(
         "format-version", "2"
     ).partitionedBy("symbol", "landing_date").createOrReplace()
     logger.info(
-        f"Table {transform_db}.{aggtrade_table} created for {symbol} on {landing_date}"
+        f"Table glue_catalog.{transform_db}.{aggtrade_table} created for {symbol} on {landing_date}"
     )
 
 
 spark.sql(f"""
-CREATE DATABASE IF NOT EXISTS {serving_db}
+CREATE DATABASE IF NOT EXISTS glue_catalog.{serving_db}
 LOCATION 's3://{DATA_LAKE_BUCKET}/serving_zone/'
 """)
 sql_stmt = f"""
@@ -114,7 +107,7 @@ select
     last(timestamp, true) as close_time,
     landing_date,
     symbol
-from {transform_db}.{aggtrade_table}
+from glue_catalog.{transform_db}.{aggtrade_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
 group by group_id, group_date, landing_date, symbol
 """
@@ -123,16 +116,16 @@ df_kline = spark.sql(sql_stmt)
 
 
 if table_exists(spark, serving_db, klines_table):
-    df_kline.writeTo(f"{serving_db}.{klines_table}").overwritePartitions()
+    df_kline.writeTo(f"glue_catalog.{serving_db}.{klines_table}").overwritePartitions()
     logger.info(
-        f"Table {serving_db}.{klines_table} overwritten for {symbol} on {landing_date}"
+        f"Table glue_catalog.{serving_db}.{klines_table} overwritten for {symbol} on {landing_date}"
     )
 else:
-    df_kline.writeTo(f"{serving_db}.{klines_table}").tableProperty(
+    df_kline.writeTo(f"glue_catalog.{serving_db}.{klines_table}").tableProperty(
         "format-version", "2"
     ).partitionedBy("symbol", "landing_date").createOrReplace()
     logger.info(
-        f"Table {serving_db}.{klines_table} created for {symbol} on {landing_date}"
+        f"Table glue_catalog.{serving_db}.{klines_table} created for {symbol} on {landing_date}"
     )
 
 logger.info("✅ Transform job completed successfully")

@@ -104,7 +104,7 @@ resource "aws_ecs_service" "airflow_service" {
   name                   = "airflow-service"
   cluster                = var.ecs_cluster_id
   task_definition        = aws_ecs_task_definition.airflow_task.arn
-  desired_count          = 0
+  desired_count          = 1
   launch_type            = "FARGATE"
   enable_execute_command = true
   platform_version       = "LATEST"

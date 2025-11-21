@@ -87,12 +87,7 @@ end_t = time.time()
 logger.info(f"Download + Extract processed in {(end_t - start_t):.3f} seconds")
 
 
-spark = (
-    SparkSession.builder.appName("LandingZone")  # type: ignore
-    .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
-    .config("spark.sql.session.timeZone", "UTC")
-    .getOrCreate()
-)
+spark = SparkSession.builder.appName("LandingZone").getOrCreate()
 
 
 schema = types.StructType(

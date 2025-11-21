@@ -38,14 +38,7 @@ spark = (
         "spark.sql.catalog.glue_catalog.catalog-impl",
         "org.apache.iceberg.aws.glue.GlueCatalog",
     )
-    .config("spark.sql.catalog.glue_catalog.warehouse", f"s3://{DATA_LAKE_BUCKET}/")
-    .config(
-        "spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"
-    )
     .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
-    .config("spark.sql.defaultCatalog", "glue_catalog")
-    .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
-    .config("spark.sql.session.timeZone", "UTC")
     .getOrCreate()
 )
 
@@ -56,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 def table_exists(spark: SparkSession, database: str, table: str) -> bool:
     try:
-        spark.catalog.getTable(f"{database}.{table}")
+        spark.catalog.getTable(f"glue_catalog.{database}.{table}")
         return True
     except (AnalysisException, Py4JJavaError):
         return False
@@ -128,7 +121,7 @@ def make_ema_in_chunks(prev_ema7, prev_ema20):
 
 logger.info(f"Transforming symbol={symbol} for date={landing_date}")
 sql_stmt = f"""
-select * from {serving_db}.{klines_table}
+select * from glue_catalog.{serving_db}.{klines_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
 """
 df_sorted = (
@@ -149,7 +142,7 @@ schema = types.StructType(
 
 if table_exists(spark, serving_db, pattern_two_table):
     sql_stmt = f"""
-    select ema7, ema20 from {serving_db}.{pattern_two_table}
+    select ema7, ema20 from glue_catalog.{serving_db}.{pattern_two_table}
     where landing_date = date_sub(DATE('{landing_date}'), 1) AND symbol = '{symbol}'
     order by group_id desc
     limit 1
@@ -215,9 +208,9 @@ logger.info(f"Output rows: {df.count()}")
 
 
 if table_exists(spark, serving_db, pattern_two_table):
-    df.writeTo(f"{serving_db}.{pattern_two_table}").overwritePartitions()
+    df.writeTo(f"glue_catalog.{serving_db}.{pattern_two_table}").overwritePartitions()
 else:
-    df.writeTo(f"{serving_db}.{pattern_two_table}").tableProperty(
+    df.writeTo(f"glue_catalog.{serving_db}.{pattern_two_table}").tableProperty(
         "format-version", "2"
     ).partitionedBy("symbol", "landing_date").createOrReplace()
 
