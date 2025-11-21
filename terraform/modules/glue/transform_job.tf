@@ -4,7 +4,7 @@ resource "aws_glue_job" "transform_job" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/transform_job.py"
+    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/transform_job/main.py"
     python_version  = "3"
   }
 

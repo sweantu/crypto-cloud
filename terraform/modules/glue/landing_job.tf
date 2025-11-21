@@ -4,7 +4,7 @@ resource "aws_glue_job" "landing_job" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/landing_job.py"
+    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/landing_job/main.py"
     python_version  = "3"
   }
 

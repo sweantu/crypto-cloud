@@ -1,6 +1,5 @@
 TF_STATE=terraform/terraform.tfstate
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
-REGION=ap-southeast-1
 
 ssh:
 	@ins="$(ins)"; \
@@ -53,7 +52,7 @@ describe-ec2:
 sync-clickhouse:
 	@instance_id="$$( $(TERRAFORM_OUTPUT) clickhouse_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
+	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" services/clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
 
 jupyter-convert:
 	@path="$(path)"; \
@@ -74,7 +73,7 @@ spark-submit:
 
 sync-glue-scripts:
 	@glue_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) glue_scripts_bucket_name)"; \
-	aws s3 sync ./services/spark-jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete
+	aws s3 sync ./spark_jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete
 
 start-glue-job:
 	@job="$(job)"; \
