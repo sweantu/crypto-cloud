@@ -26,6 +26,13 @@
             because Maven automatically include any transitive dependency -->
             <version>${aws.connector.version}</version>
         </dependency>
+        
+        <!-- ClickHouse Sink Connector -->
+        <dependency>
+            <groupId>name.nkonev.flink</groupId>
+            <artifactId>flink-sql-connector-clickhouse</artifactId>
+            <version>1.17.1-8</version>
+        </dependency>
     </dependencies>
 
     <build>

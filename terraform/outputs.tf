@@ -80,9 +80,9 @@ output "airflow_ecs_service_name" {
 #   value = module.kinesis.stream_arns
 # }
 
-# output "flink_scripts_bucket_name" {
-#   value = module.flink.flink_scripts_bucket_name
-# }
+output "flink_scripts_bucket_name" {
+  value = module.scripts.flink_scripts_bucket_name
+}
 
 # output "kinesis_example_job_name" {
 #   value = module.flink.kinesis_example_job_name

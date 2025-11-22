@@ -12,7 +12,7 @@ resource "aws_kinesisanalyticsv2_application" "kinesis_example_job" {
     application_code_configuration {
       code_content {
         s3_content_location {
-          bucket_arn = aws_s3_bucket.flink_scripts.arn
+          bucket_arn = var.scripts_bucket_arn
           file_key   = "kinesis_example/target/managed-flink-pyflink-getting-started-1.0.0.zip"
         }
       }
@@ -49,8 +49,9 @@ resource "aws_kinesisanalyticsv2_application" "kinesis_example_job" {
       property_group {
         property_group_id = "OutputStream0"
         property_map = {
-          "stream.arn" = var.stream_arns["ExampleOutputStream"]
-          "aws.region" = var.region
+          "stream.arn"    = var.stream_arns["ExampleOutputStream"]
+          "aws.region"    = var.region
+          "clickhouse.ip" = "13.215.161.193"
         }
       }
     }

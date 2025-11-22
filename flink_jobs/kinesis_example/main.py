@@ -36,8 +36,8 @@ import os
 import pyflink
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 #######################################
 # 1. Creates the execution environment
@@ -56,7 +56,8 @@ APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
 # Python application, as opposed to running in a Flink cluster).
 # Differently from Java Flink, PyFlink cannot automatically detect when running in local mode
 is_local = True if os.environ.get("IS_LOCAL") else False
-print(f"is_local = {is_local}, IS_LOCAL = {os.environ.get('IS_LOCAL')}")
+logger.info(f"Is local mode: {is_local} from logging")
+print(f"Is local mode: {is_local} from print")
 
 ##############################################
 # 2. Set special configuration for local mode
@@ -138,6 +139,9 @@ def main():
     output_stream_properties = property_map(props, "OutputStream0")
     output_stream_arn = output_stream_properties["stream.arn"]
     output_stream_region = output_stream_properties["aws.region"]
+    output_clickhouse_ip = output_stream_properties["clickhouse.ip"]
+    logger.info(f"Output ClickHouse IP: {output_clickhouse_ip} from logging")
+    print(f"Output ClickHouse IP: {output_clickhouse_ip} from print")
 
     #################################################
     # 4. Define source table using kinesis connector
@@ -195,6 +199,25 @@ def main():
                 'json.timestamp-format.standard' = 'ISO-8601'
               )""")
 
+    table_env.execute_sql(f"""
+            CREATE TABLE clickhouse_output (
+                ticker VARCHAR(6),
+                price DOUBLE,
+                event_time TIMESTAMP(3)
+            ) WITH (
+                'connector' = 'clickhouse',
+                'url' = 'clickhouse://{output_clickhouse_ip}:8123',
+                'database-name' = 'testdb',
+                'table-name' = 'output',
+                'username' = 'default',
+                'password' = '123456',
+                'sink.batch-size' = '5000',
+                'sink.flush-interval' = '2s',
+                'sink.max-retries' = '3',
+                'sink.ignore-delete' = 'true'
+            )
+            """)
+
     # For local development purposes, you might want to print the output to the console, instead of sending it to a
     # Kinesis Stream. To do that, you can replace the sink table using the 'kinesis' connector, above, with a sink table
     # using the 'print' connector. Comment the statement immediately above and uncomment the one immediately below.
@@ -217,10 +240,17 @@ def main():
     ##########################################################################################
 
     # Executing an INSERT INTO statement will trigger the job
-    table_result = table_env.execute_sql("""
+    statement_set = table_env.create_statement_set()
+    # Executing an INSERT INTO statement will trigger the job
+    statement_set.add_insert_sql("""
         INSERT INTO output 
         SELECT ticker, price, event_time 
         FROM prices""")
+    statement_set.add_insert_sql("""
+        INSERT INTO clickhouse_output 
+        SELECT ticker, price, event_time 
+        FROM prices""")
+    table_result = statement_set.execute()
 
     # When running locally, as a standalone Python application, you must instruct Python not to exit at the end of the
     # main() method, otherwise the job will stop immediately.
@@ -231,5 +261,6 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.info("Starting Flink job v1")
+    logger.info("✅ Starting Flink job v3 with logging")
+    print("✅ Starting Flink job v3 with print")
     main()

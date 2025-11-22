@@ -9,3 +9,7 @@ variable "region" {
 variable "stream_arns" {
   type = map(string)
 }
+
+variable "scripts_bucket_arn" {
+  type = string
+}

@@ -98,10 +98,17 @@ module "airflow" {
 #   source = "./modules/kinesis"
 # }
 
+module "scripts" {
+  source = "./modules/scripts"
+
+  project_prefix = local.project_prefix
+}
+
 # module "flink" {
 #   source = "./modules/flink"
 
-#   project_prefix = local.project_prefix
-#   region         = var.region
-#   stream_arns    = module.kinesis.stream_arns
+#   project_prefix     = local.project_prefix
+#   region             = var.region
+#   stream_arns        = module.kinesis.stream_arns
+#   scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
 # }
