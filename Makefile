@@ -144,3 +144,7 @@ start-rds:
 	echo "iden=$$iden" ; \
 	db_instance_identifier="$$($(TERRAFORM_OUTPUT) "$${iden}_identifier")"; \
 	aws rds start-db-instance --db-instance-identifier "$$db_instance_identifier"
+
+sync-flink-scripts:
+	@flink_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) flink_scripts_bucket_name)"; \
+	aws s3 sync ./flink_jobs s3://$$flink_scripts_bucket_name --exclude "*" --include "*.zip" --delete

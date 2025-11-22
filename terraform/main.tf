@@ -93,3 +93,15 @@ module "airflow" {
   transform_job_name             = module.glue.transform_job_name
   transform_job_pattern_two_name = module.glue.transform_job_pattern_two_name
 }
+
+# module "kinesis" {
+#   source = "./modules/kinesis"
+# }
+
+# module "flink" {
+#   source = "./modules/flink"
+
+#   project_prefix = local.project_prefix
+#   region         = var.region
+#   stream_arns    = module.kinesis.stream_arns
+# }
