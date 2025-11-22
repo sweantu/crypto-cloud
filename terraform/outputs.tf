@@ -84,6 +84,10 @@ output "flink_scripts_bucket_name" {
   value = module.scripts.flink_scripts_bucket_name
 }
 
-# output "kinesis_example_job_name" {
-#   value = module.flink.kinesis_example_job_name
-# }
+output "kinesis_example_job_name" {
+  value = module.flink.kinesis_example_job_name
+}
+
+output "iceberg_sink_job_name" {
+  value = module.flink.iceberg_sink_job_name
+}

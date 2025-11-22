@@ -13,3 +13,7 @@ variable "stream_arns" {
 variable "scripts_bucket_arn" {
   type = string
 }
+
+variable "data_lake_bucket" {
+  type = string
+}

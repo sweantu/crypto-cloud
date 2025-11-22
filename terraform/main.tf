@@ -104,11 +104,15 @@ module "scripts" {
   project_prefix = local.project_prefix
 }
 
-# module "flink" {
-#   source = "./modules/flink"
+module "flink" {
+  source = "./modules/flink"
 
-#   project_prefix     = local.project_prefix
-#   region             = var.region
-#   stream_arns        = module.kinesis.stream_arns
-#   scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
-# }
+  project_prefix = local.project_prefix
+  region         = var.region
+  stream_arns = tomap({
+    "ExampleInputStream"  = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/ExampleInputStream",
+    "ExampleOutputStream" = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/ExampleOutputStream"
+  })
+  scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
+  data_lake_bucket   = module.data_lake.data_lake_bucket_name
+}
