@@ -5,7 +5,7 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
-STREAM_NAME = os.getenv("AGGTRADES_STREAM_NAME")
+STREAM_NAME = os.getenv("ENGULFINGS_STREAM_NAME")
 REGION = os.getenv("REGION")
 
 

@@ -9,6 +9,7 @@ import boto3
 
 STREAM_NAME = os.getenv("AGGTRADES_STREAM_NAME")
 REGION = os.getenv("REGION")
+DURATION = 60 * 5  # seconds
 
 
 def delivery_report(err, record_info):
@@ -77,7 +78,6 @@ def produce_messages(stream_name: str, symbol: str, file_path: str) -> None:
     symbol_to_partition = {"ADAUSDT": 0, "BTCUSDT": 1, "ETHUSDT": 2, "BNBUSDT": 3}
     kinesis_client = boto3.client("kinesis", region_name=REGION)
     num_lines = int(subprocess.check_output(["wc", "-l", file_path]).split()[0])
-    duration_in_seconds = 90
     t_start = time.time()
     with open(
         file_path,
@@ -90,7 +90,7 @@ def produce_messages(stream_name: str, symbol: str, file_path: str) -> None:
             try:
                 msg = json.dumps(AggTrade(row, symbol).__dict__)
                 records.append({"data": msg, "partition_key": symbol})
-                if i % int(num_lines / duration_in_seconds) == 0 or i == num_lines:
+                if i % int(num_lines / DURATION) == 0 or i == num_lines:
                     put_records_safe(
                         kinesis_client, stream_name, records, delivery_records_report
                     )
