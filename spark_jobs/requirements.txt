@@ -1,0 +1,5 @@
+pyspark==3.5.4
+jupyterlab
+pandas
+boto3
+awswrangler
