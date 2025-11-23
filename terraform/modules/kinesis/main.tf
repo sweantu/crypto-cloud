@@ -1,7 +1,8 @@
 resource "aws_kinesis_stream" "crypto_stream_example" {
   for_each = toset([
-    "ExampleInputStream",
-    "ExampleOutputStream",
+    # "ExampleInputStream",
+    # "ExampleOutputStream",
+    "${var.project_prefix}-aggtrades-stream",
   ])
   name             = each.key
   shard_count      = var.shard_count

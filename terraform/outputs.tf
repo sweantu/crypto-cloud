@@ -72,13 +72,13 @@ output "airflow_ecs_service_name" {
   value = module.airflow.airflow_ecs_service_name
 }
 
-# output "kinesis_stream_names" {
-#   value = module.kinesis.stream_names
-# }
+output "kinesis_stream_names" {
+  value = module.kinesis.stream_names
+}
 
-# output "kinesis_stream_arns" {
-#   value = module.kinesis.stream_arns
-# }
+output "kinesis_stream_arns" {
+  value = module.kinesis.stream_arns
+}
 
 output "flink_scripts_bucket_name" {
   value = module.scripts.flink_scripts_bucket_name

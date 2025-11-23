@@ -94,9 +94,11 @@ module "airflow" {
   transform_job_pattern_two_name = module.glue.transform_job_pattern_two_name
 }
 
-# module "kinesis" {
-#   source = "./modules/kinesis"
-# }
+module "kinesis" {
+  source = "./modules/kinesis"
+
+  project_prefix = local.project_prefix
+}
 
 module "scripts" {
   source = "./modules/scripts"
