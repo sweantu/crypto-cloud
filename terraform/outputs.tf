@@ -107,3 +107,7 @@ output "aggtrades_producer_lambda_name" {
 output "aggtrades_producer_service_name" {
   value = module.producers.aggtrades_producer_service_name
 }
+
+# output "grafana_service_name" {
+#   value = module.grafana.grafana_service_name
+# }

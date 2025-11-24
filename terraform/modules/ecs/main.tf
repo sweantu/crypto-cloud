@@ -23,7 +23,6 @@ resource "aws_iam_role" "ecs_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_execution_policies" {
   for_each = toset([
     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   ])
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = each.key

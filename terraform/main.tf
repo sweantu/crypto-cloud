@@ -141,3 +141,16 @@ module "producers" {
   default_symbols             = "[\"ADAUSDT\",\"SUIUSDT\"]"
   default_landing_dates       = "[\"2025-09-27\",\"2025-09-28\"]"
 }
+
+# module "grafana" {
+#   source = "./modules/grafana"
+
+#   project_prefix         = local.project_prefix
+#   region                 = var.region
+#   vpc_id                 = module.vpc.vpc_id
+#   public_subnet_ids      = module.vpc.public_subnet_ids
+#   ecs_execution_role_arn = module.ecs.ecs_execution_role_arn
+#   ecs_cluster_id         = module.ecs.ecs_cluster_id
+#   grafana_admin_username = var.grafana_admin_username
+#   grafana_admin_password = var.grafana_admin_password
+# }
