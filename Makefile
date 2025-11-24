@@ -148,3 +148,15 @@ start-rds:
 sync-flink-scripts:
 	@flink_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) flink_scripts_bucket_name)"; \
 	aws s3 sync ./flink_jobs s3://$$flink_scripts_bucket_name --exclude "*" --include "*.zip" --delete
+
+invoke-lambda:
+	@function="$(function)"; \
+	[ -z "$$function" ] && function="aggtrades_producer"; \
+	echo "function=$$function"; \
+	function_name="$$( $(TERRAFORM_OUTPUT) "$${function}_lambda_name" )"; \
+	aws lambda invoke \
+		--cli-binary-format raw-in-base64-out \
+		--function-name "$$function_name" \
+		--invocation-type Event \
+		--payload file://lambda_input.json \
+		lambda_output.json;

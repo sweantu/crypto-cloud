@@ -91,3 +91,11 @@ output "kinesis_example_job_name" {
 output "iceberg_sink_job_name" {
   value = module.flink.iceberg_sink_job_name
 }
+
+output "lambda_role_arn" {
+  value = module.lambda.lambda_role_arn
+}
+
+output "aggtrades_producer_lambda_name" {
+  value = module.lambda.aggtrades_producer_lambda_name
+}

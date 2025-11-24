@@ -1,0 +1,15 @@
+{
+    "original": "https://crypto-cloud.dev/?token=123",
+    "path": "/",
+    "query": "token=123",
+    "symbols": [
+        "ADAUSDT",
+        "SUIUSDT"
+    ],
+    "landing_dates": [
+        "2025-09-27",
+        "2025-09-28"
+    ],
+    "region": "ap-southeast-1",
+    "stream_name": "crypto-cloud-dev-650251698703-aggtrades-stream"
+}

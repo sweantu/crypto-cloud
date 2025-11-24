@@ -112,9 +112,17 @@ module "flink" {
   project_prefix = local.project_prefix
   region         = var.region
   stream_arns = tomap({
-    "ExampleInputStream"  = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/crypto-cloud-dev-650251698703-aggtrades-stream",
-    "ExampleOutputStream" = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/crypto-cloud-dev-650251698703-engulfings-stream"
+    "ExampleInputStream"  = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-aggtrades-stream",
+    "ExampleOutputStream" = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-engulfings-stream"
   })
   scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
   data_lake_bucket   = module.data_lake.data_lake_bucket_name
+}
+
+module "lambda" {
+  source = "./modules/lambda"
+
+  project_prefix      = local.project_prefix
+  kinesis_stream_name = "${local.project_prefix}-aggtrades-stream"
+  region              = var.region
 }

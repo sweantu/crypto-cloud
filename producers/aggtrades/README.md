@@ -1,0 +1,3 @@
+python main.py \
+ --symbols '["ADAUSDT","SUIUSDT"]' \
+ --landing_dates '["2025-09-27","2025-09-28"]'
