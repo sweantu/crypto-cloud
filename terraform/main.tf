@@ -126,3 +126,18 @@ module "lambda" {
   kinesis_stream_name = "${local.project_prefix}-aggtrades-stream"
   region              = var.region
 }
+
+module "producers" {
+  source = "./modules/producers"
+
+  project_prefix              = local.project_prefix
+  region                      = var.region
+  vpc_id                      = module.vpc.vpc_id
+  public_subnet_ids           = module.vpc.public_subnet_ids
+  ecs_execution_role_arn      = module.ecs.ecs_execution_role_arn
+  ecs_cluster_id              = module.ecs.ecs_cluster_id
+  aggtrades_producer_repo_url = module.ecr.aggtrades_producer_repo_url
+  aggtrades_stream_name       = "${local.project_prefix}-aggtrades-stream"
+  default_symbols             = "[\"ADAUSDT\",\"SUIUSDT\"]"
+  default_landing_dates       = "[\"2025-09-27\",\"2025-09-28\"]"
+}

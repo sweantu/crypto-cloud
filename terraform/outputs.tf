@@ -60,6 +60,10 @@ output "airflow_repo_url" {
   value = module.ecr.airflow_repo_url
 }
 
+output "aggtrades_producer_repo_url" {
+  value = module.ecr.aggtrades_producer_repo_url
+}
+
 output "airflow_db_endpoint" {
   value = module.airflow.airflow_db_endpoint
 }
@@ -98,4 +102,8 @@ output "lambda_role_arn" {
 
 output "aggtrades_producer_lambda_name" {
   value = module.lambda.aggtrades_producer_lambda_name
+}
+
+output "aggtrades_producer_service_name" {
+  value = module.producers.aggtrades_producer_service_name
 }

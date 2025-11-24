@@ -158,6 +158,10 @@ if __name__ == "__main__":
 
     symbols = json.loads(args.symbols)
     landing_dates = json.loads(args.landing_dates)
+    logger.info(f"Symbols: {symbols}")
+    logger.info(f"Landing Dates: {landing_dates}")
+    logger.info(f"Stream Name: {STREAM_NAME}")
+    logger.info(f"Region: {REGION}")
 
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
