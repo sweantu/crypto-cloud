@@ -112,9 +112,45 @@ module "flink" {
   project_prefix = local.project_prefix
   region         = var.region
   stream_arns = tomap({
-    "ExampleInputStream"  = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/crypto-cloud-dev-650251698703-aggtrades-stream",
-    "ExampleOutputStream" = "arn:aws:kinesis:ap-southeast-1:650251698703:stream/crypto-cloud-dev-650251698703-engulfings-stream"
+    "ExampleInputStream"  = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-aggtrades-stream",
+    "ExampleOutputStream" = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-engulfings-stream"
   })
   scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
   data_lake_bucket   = module.data_lake.data_lake_bucket_name
 }
+
+module "lambda" {
+  source = "./modules/lambda"
+
+  project_prefix      = local.project_prefix
+  kinesis_stream_name = "${local.project_prefix}-aggtrades-stream"
+  region              = var.region
+}
+
+module "producers" {
+  source = "./modules/producers"
+
+  project_prefix              = local.project_prefix
+  region                      = var.region
+  vpc_id                      = module.vpc.vpc_id
+  public_subnet_ids           = module.vpc.public_subnet_ids
+  ecs_execution_role_arn      = module.ecs.ecs_execution_role_arn
+  ecs_cluster_id              = module.ecs.ecs_cluster_id
+  aggtrades_producer_repo_url = module.ecr.aggtrades_producer_repo_url
+  aggtrades_stream_name       = "${local.project_prefix}-aggtrades-stream"
+  default_symbols             = "[\"ADAUSDT\",\"SUIUSDT\"]"
+  default_landing_dates       = "[\"2025-09-27\",\"2025-09-28\"]"
+}
+
+# module "grafana" {
+#   source = "./modules/grafana"
+
+#   project_prefix         = local.project_prefix
+#   region                 = var.region
+#   vpc_id                 = module.vpc.vpc_id
+#   public_subnet_ids      = module.vpc.public_subnet_ids
+#   ecs_execution_role_arn = module.ecs.ecs_execution_role_arn
+#   ecs_cluster_id         = module.ecs.ecs_cluster_id
+#   grafana_admin_username = var.grafana_admin_username
+#   grafana_admin_password = var.grafana_admin_password
+# }

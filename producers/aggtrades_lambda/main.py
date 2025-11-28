@@ -1,4 +1,3 @@
-import argparse
 import csv
 import json
 import logging
@@ -150,18 +149,10 @@ def extract_file(extract_dir, zip_path):
         logger.info(f"Extracted CSV: {zip_path}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--symbols", required=True)
-    parser.add_argument("--landing_dates", required=True)
-    args = parser.parse_args()
-
-    symbols = json.loads(args.symbols)
-    landing_dates = json.loads(args.landing_dates)
-    logger.info(f"Symbols: {symbols}")
-    logger.info(f"Landing Dates: {landing_dates}")
-    logger.info(f"Stream Name: {STREAM_NAME}")
-    logger.info(f"Region: {REGION}")
+def lambda_handler(event, context):
+    symbols = event.get("symbols", [])
+    landing_dates = event.get("landing_dates", [])
+    print(f"Producing crypto trades for {symbols} on dates {landing_dates}")
 
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
@@ -221,3 +212,9 @@ if __name__ == "__main__":
         remove_file(csv_path)
         remove_file(zip_path)
     print("✅ All rounds completed.")
+    return {
+        "symbols": symbols,
+        "landing_dates": landing_dates,
+        "region": REGION,
+        "stream_name": STREAM_NAME,
+    }

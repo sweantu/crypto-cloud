@@ -60,6 +60,10 @@ output "airflow_repo_url" {
   value = module.ecr.airflow_repo_url
 }
 
+output "aggtrades_producer_repo_url" {
+  value = module.ecr.aggtrades_producer_repo_url
+}
+
 output "airflow_db_endpoint" {
   value = module.airflow.airflow_db_endpoint
 }
@@ -91,3 +95,19 @@ output "kinesis_example_job_name" {
 output "iceberg_sink_job_name" {
   value = module.flink.iceberg_sink_job_name
 }
+
+output "lambda_role_arn" {
+  value = module.lambda.lambda_role_arn
+}
+
+output "aggtrades_producer_lambda_name" {
+  value = module.lambda.aggtrades_producer_lambda_name
+}
+
+output "aggtrades_producer_service_name" {
+  value = module.producers.aggtrades_producer_service_name
+}
+
+# output "grafana_service_name" {
+#   value = module.grafana.grafana_service_name
+# }

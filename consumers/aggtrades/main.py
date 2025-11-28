@@ -1,15 +1,21 @@
+import argparse
 import json
+import logging
 import os
 import time
 
 import boto3
 from botocore.exceptions import ClientError
 
-STREAM_NAME = os.getenv("ENGULFINGS_STREAM_NAME")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 REGION = os.getenv("REGION")
+RECORDS_PER_SHARD = 500
+MODE = "TRIM_HORIZON"  # or "LATEST"
 
 
-def get_shard_iters(kinesis, stream_name, iterator_type="TRIM_HORIZON"):
+def get_shard_iters(kinesis, stream_name, iterator_type=MODE):
     shards_resp = kinesis.describe_stream(StreamName=stream_name)
     # print("shards_resp:", json.dumps(shards_resp, indent=2, default=str))
     shards = shards_resp["StreamDescription"]["Shards"]
@@ -36,7 +42,9 @@ def consume_messages(kinesis, shard_iters):
         while True:
             for shard_id, iterator in list(shard_iters.items()):
                 try:
-                    resp = kinesis.get_records(ShardIterator=iterator, Limit=500)
+                    resp = kinesis.get_records(
+                        ShardIterator=iterator, Limit=RECORDS_PER_SHARD
+                    )
                 except ClientError as e:
                     print(f"❌ Error fetching records from {shard_id}: {e}")
                     continue
@@ -61,6 +69,14 @@ def consume_messages(kinesis, shard_iters):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--stream_name", required=True)
+    parser.add_argument("--mode", default=MODE)
+    args = parser.parse_args()
+
+    stream_name = args.stream_name
+    mode = args.mode
+    logger.info(f"Using stream name: {stream_name}")
     kinesis = boto3.client("kinesis", region_name=REGION)
-    shard_iters = get_shard_iters(kinesis, STREAM_NAME)
+    shard_iters = get_shard_iters(kinesis, stream_name, iterator_type=mode)
     consume_messages(kinesis, shard_iters)
