@@ -126,6 +126,17 @@ push-aggtrades-producer-image:
 	  -t $$aggtrades_producer_repo_url:latest \
 	  --push producers/aggtrades/.
 
+push-aggtrades-consumer-image:
+	@aggtrades_consumer_repo_url="$$($(TERRAFORM_OUTPUT) aggtrades_consumer_repo_url)"; \
+	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
+	aws ecr get-login-password --region $(REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	docker buildx build \
+	  --platform linux/amd64 \
+	  -f consumers/aggtrades/Dockerfile \
+	  -t $$aggtrades_consumer_repo_url:latest \
+	  --push .
+
 log-ecs:
 	@task="$(task)"; \
 	[ -z "$$task" ] && task="airflow"; \

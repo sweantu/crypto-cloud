@@ -64,6 +64,10 @@ output "aggtrades_producer_repo_url" {
   value = module.ecr.aggtrades_producer_repo_url
 }
 
+output "aggtrades_consumer_repo_url" {
+  value = module.ecr.aggtrades_consumer_repo_url
+}
+
 output "airflow_db_endpoint" {
   value = module.airflow.airflow_db_endpoint
 }
@@ -111,3 +115,17 @@ output "aggtrades_producer_service_name" {
 # output "grafana_service_name" {
 #   value = module.grafana.grafana_service_name
 # }
+
+output "crypto_sqs_queue_url" {
+  value = module.sqs.crypto_sqs_queue_url
+}
+output "crypto_sqs_queue_arn" {
+  value = module.sqs.crypto_sqs_queue_arn
+}
+
+output "crypto_sqs_dlq_url" {
+  value = module.sqs.crypto_sqs_dlq_url
+}
+output "crypto_sqs_dlq_arn" {
+  value = module.sqs.crypto_sqs_dlq_arn
+}

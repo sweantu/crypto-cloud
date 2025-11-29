@@ -1,82 +1,31 @@
 import argparse
-import json
 import logging
 import os
-import time
 
 import boto3
-from botocore.exceptions import ClientError
+
+from common.sqs import consume_messages
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 REGION = os.getenv("REGION")
-RECORDS_PER_SHARD = 500
+NUM_OF_RECORDS = 10
 MODE = "TRIM_HORIZON"  # or "LATEST"
 
 
-def get_shard_iters(kinesis, stream_name, iterator_type=MODE):
-    shards_resp = kinesis.describe_stream(StreamName=stream_name)
-    # print("shards_resp:", json.dumps(shards_resp, indent=2, default=str))
-    shards = shards_resp["StreamDescription"]["Shards"]
-    if not shards:
-        raise RuntimeError(f"No shards found in {stream_name}")
-    print(f"📦 Found {len(shards)} shard(s) in {stream_name}")
-
-    shard_iters = {}
-    for shard in shards:
-        shard_id = shard["ShardId"]
-        iter_resp = kinesis.get_shard_iterator(
-            StreamName=stream_name,
-            ShardId=shard_id,
-            ShardIteratorType=iterator_type,
-        )
-        shard_iters[shard_id] = iter_resp["ShardIterator"]
-    return shard_iters
-
-
-def consume_messages(kinesis, shard_iters):
-    print("👂 Listening for messages...\n")
-    try:
-        total = 0
-        while True:
-            for shard_id, iterator in list(shard_iters.items()):
-                try:
-                    resp = kinesis.get_records(
-                        ShardIterator=iterator, Limit=RECORDS_PER_SHARD
-                    )
-                except ClientError as e:
-                    print(f"❌ Error fetching records from {shard_id}: {e}")
-                    continue
-
-                records = resp.get("Records", [])
-                if records:
-                    total += len(records)
-                    print(f"🔢 Total records consumed so far: {total}")
-                for record in records[-1:]:
-                    data = json.loads(record["Data"].decode("utf-8"))
-                    seq = record["SequenceNumber"]
-                    print(
-                        f"📩 Shard {shard_id} Seq {seq}:\n{json.dumps(data, indent=2)}\n"
-                    )
-
-                # Move iterator forward
-                shard_iters[shard_id] = resp.get("NextShardIterator")
-                time.sleep(0.2)  # Small sleep to avoid throttling
-
-    except KeyboardInterrupt:
-        print("🛑 Stopped by user.")
-
-
 if __name__ == "__main__":
+    kinesis_client = boto3.client("kinesis", region_name=REGION)
+    sqs_client = boto3.client("sqs", region_name=REGION)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--stream_name", required=True)
+    parser.add_argument("--name", required=True)
     parser.add_argument("--mode", default=MODE)
     args = parser.parse_args()
 
-    stream_name = args.stream_name
+    name = args.name
     mode = args.mode
-    logger.info(f"Using stream name: {stream_name}")
-    kinesis = boto3.client("kinesis", region_name=REGION)
-    shard_iters = get_shard_iters(kinesis, stream_name, iterator_type=mode)
-    consume_messages(kinesis, shard_iters)
+    logger.info(f"Using name: {name}")
+    logger.info(f"Using mode: {mode}")
+    # shard_iters = get_shard_iters(kinesis_client, name, iterator_type=mode)
+    # consume_messages(kinesis_client, shard_iters, NUM_OF_RECORDS)
+    consume_messages(sqs_client, name, NUM_OF_RECORDS)
