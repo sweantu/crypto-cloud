@@ -154,3 +154,25 @@ module "producers" {
 #   grafana_admin_username = var.grafana_admin_username
 #   grafana_admin_password = var.grafana_admin_password
 # }
+
+
+module "sqs" {
+  source = "./modules/sqs"
+
+  project_prefix = local.project_prefix
+}
+
+module "consumers" {
+  source = "./modules/consumers"
+
+  project_prefix              = local.project_prefix
+  region                      = var.region
+  vpc_id                      = module.vpc.vpc_id
+  public_subnet_ids           = module.vpc.public_subnet_ids
+  ecs_execution_role_arn      = module.ecs.ecs_execution_role_arn
+  ecs_cluster_id              = module.ecs.ecs_cluster_id
+  ecs_cluster_name            = module.ecs.ecs_cluster_name
+  aggtrades_consumer_repo_url = module.ecr.aggtrades_consumer_repo_url
+  crypto_sqs_queue_url        = module.sqs.crypto_sqs_queue_url
+  crypto_sqs_queue_name       = module.sqs.crypto_sqs_queue_name
+}
