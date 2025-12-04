@@ -14,6 +14,6 @@ ADD --chmod=644 \
     /opt/hive/lib/aws-java-sdk-bundle.jar
 
 # Your config
-COPY hive/hive-site.xml /opt/hive/conf/hive-site.xml
+COPY services/hive/hive-site.xml /opt/hive/conf/hive-site.xml
 
 USER hive

@@ -8,17 +8,6 @@ RUN apt-get update && \
     ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
     rm -rf /var/lib/apt/lists/*
 
-# --- Iceberg 1.7.1 for Spark 3.5 ---
-ADD https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.7.1/iceberg-spark-runtime-3.5_2.12-1.7.1.jar \
-    /opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar
-
-# --- S3A / MinIO support ---
-ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.6/hadoop-aws-3.3.6.jar \
-    /opt/spark/jars/hadoop-aws-3.3.6.jar
-
-ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.632/aws-java-sdk-bundle-1.12.632.jar \
-    /opt/spark/jars/aws-java-sdk-bundle-1.12.632.jar
-
 RUN pip3 install --no-cache-dir pyspark==3.5.4
 
 USER spark
