@@ -107,8 +107,8 @@ get-glue-job-status:
 push-airflow-image:
 	@airflow_repo_url="$$($(TERRAFORM_OUTPUT) airflow_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f airflow/Dockerfile \
@@ -118,8 +118,8 @@ push-airflow-image:
 push-aggtrades-producer-image:
 	@aggtrades_producer_repo_url="$$($(TERRAFORM_OUTPUT) aggtrades_producer_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f producers/aggtrades/Dockerfile \
@@ -129,8 +129,8 @@ push-aggtrades-producer-image:
 push-aggtrades-consumer-image:
 	@aggtrades_consumer_repo_url="$$($(TERRAFORM_OUTPUT) aggtrades_consumer_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f consumers/aggtrades/Dockerfile \

@@ -8,7 +8,7 @@ locals {
   account_id                = data.aws_caller_identity.current.account_id
   project_prefix            = "${var.project}-${var.environment}-${local.account_id}"
   project_prefix_underscore = replace(local.project_prefix, "-", "_")
-  azs                       = slice(data.aws_availability_zones.available.names, 0, var.az_count)
+  azs                       = slice(data.aws_availability_zones.available.names, 0, var.vpc_az_count)
 }
 
 module "vpc" {
@@ -76,7 +76,7 @@ module "airflow" {
   source = "./modules/airflow"
 
   project_prefix                 = local.project_prefix
-  region                         = var.region
+  region                         = var.aws_region
   vpc_id                         = module.vpc.vpc_id
   public_subnet_ids              = module.vpc.public_subnet_ids
   airflow_db_username            = var.airflow_db_username
@@ -110,10 +110,10 @@ module "flink" {
   source = "./modules/flink"
 
   project_prefix = local.project_prefix
-  region         = var.region
+  region         = var.aws_region
   stream_arns = tomap({
-    "ExampleInputStream"  = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-aggtrades-stream",
-    "ExampleOutputStream" = "arn:aws:kinesis:${var.region}:${local.account_id}:stream/${local.project_prefix}-engulfings-stream"
+    "ExampleInputStream"  = "arn:aws:kinesis:${var.aws_region}:${local.account_id}:stream/${local.project_prefix}-aggtrades-stream",
+    "ExampleOutputStream" = "arn:aws:kinesis:${var.aws_region}:${local.account_id}:stream/${local.project_prefix}-engulfings-stream"
   })
   scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
   data_lake_bucket   = module.data_lake.data_lake_bucket_name
@@ -124,14 +124,14 @@ module "lambda" {
 
   project_prefix      = local.project_prefix
   kinesis_stream_name = "${local.project_prefix}-aggtrades-stream"
-  region              = var.region
+  region              = var.aws_region
 }
 
 module "producers" {
   source = "./modules/producers"
 
   project_prefix              = local.project_prefix
-  region                      = var.region
+  region                      = var.aws_region
   vpc_id                      = module.vpc.vpc_id
   public_subnet_ids           = module.vpc.public_subnet_ids
   ecs_execution_role_arn      = module.ecs.ecs_execution_role_arn
@@ -166,7 +166,7 @@ module "consumers" {
   source = "./modules/consumers"
 
   project_prefix              = local.project_prefix
-  region                      = var.region
+  region                      = var.aws_region
   vpc_id                      = module.vpc.vpc_id
   public_subnet_ids           = module.vpc.public_subnet_ids
   ecs_execution_role_arn      = module.ecs.ecs_execution_role_arn

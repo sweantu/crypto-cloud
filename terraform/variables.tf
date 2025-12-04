@@ -1,8 +1,8 @@
-variable "region" {
+variable "aws_region" {
   type = string
 }
 
-variable "profile" {
+variable "aws_profile" {
   type = string
 }
 
@@ -18,7 +18,7 @@ variable "vpc_cidr" {
   type = string
 }
 
-variable "az_count" {
+variable "vpc_az_count" {
   type = number
 }
 

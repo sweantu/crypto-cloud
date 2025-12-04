@@ -57,8 +57,6 @@ def extract_file(extract_dir, zip_path):
     if not os.path.exists(zip_path):
         logger.info(f"{zip_path} not found")
         return
-    if not os.path.exists(extract_dir):
-        os.makedirs(extract_dir)
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(extract_dir)
         file_path = os.path.join(extract_dir, os.listdir(extract_dir)[0])
@@ -74,7 +72,7 @@ def upload_to_s3(bucket_name, file_path):
     return f"s3://{bucket_name}/{s3_key}"
 
 
-script_dir = "/tmp"
+script_dir = "/tmp/data/raw"
 extract_dir = os.path.join(script_dir, "unzipped_data")
 url = f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
 zip_path = os.path.join(script_dir, url.split("/")[-1])
