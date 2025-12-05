@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 
+# import sys
 # from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession, types
 from pyspark.sql import functions as F
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 #         "landing_date",
 #         "project_prefix_underscore",
 #         "data_lake_bucket",
+#         "iceberg_lock_table",
 #     ],
 # )
 

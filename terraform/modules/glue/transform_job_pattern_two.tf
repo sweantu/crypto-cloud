@@ -4,7 +4,7 @@ resource "aws_glue_job" "transform_job_pattern_two" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/transform_job_pattern_two/main.py"
+    script_location = "s3://${aws_s3_bucket.glue_scripts.bucket}/transform/pattern_two.py"
     python_version  = "3"
   }
 
@@ -13,8 +13,9 @@ resource "aws_glue_job" "transform_job_pattern_two" {
     "--enable-glue-datacatalog"          = "true"
     "--enable-continuous-cloudwatch-log" = "true"
     "--TempDir"                          = "s3://${aws_s3_bucket.glue_scripts.bucket}/temp/"
+    "--extra-py-files"                   = "s3://${aws_s3_bucket.glue_scripts.bucket}/build/glue_job_libs/extra.zip"
     "--symbol"                           = "ADAUSDT"
-    "--landing_date"                     = "2025-09-27"
+    "--landing_date"                     = "2025-10-01"
     "--project_prefix_underscore"        = var.project_prefix_underscore
     "--data_lake_bucket"                 = var.data_lake_bucket_name
     "--iceberg_lock_table"               = var.iceberg_lock_table_name

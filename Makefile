@@ -71,9 +71,17 @@ spark-submit:
 		--conf "spark.sql.shuffle.partitions=2" \
 		$$script
 
+build-glue-job-libs:
+	@rm -rf ./build/glue_job_libs; \
+	mkdir -p ./build/glue_job_libs; \
+	cp -R ./shared_lib/src/shared_lib ./build/glue_job_libs/shared_lib ; \
+	cp -R ./spark_jobs/common ./build/glue_job_libs/common ; \
+	cd ./build/glue_job_libs && zip -r extra.zip . ;\
+
 sync-glue-scripts:
 	@glue_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) glue_scripts_bucket_name)"; \
-	aws s3 sync ./spark_jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete
+	aws s3 sync ./spark_jobs/jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete; \
+	aws s3 sync ./build/glue_job_libs s3://$$glue_scripts_bucket_name/build/glue_job_libs --exclude "*" --include "*.zip" --delete
 
 start-glue-job:
 	@job="$(job)"; \

@@ -1,33 +1,33 @@
-import argparse
+# import argparse
 import logging
+import sys
 
+from awsglue.utils import getResolvedOptions
 from common.ema import make_ema_in_chunks
 from common.table import table_exists
-
-# from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession, types
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# args = getResolvedOptions(
-#     sys.argv,
-#     [
-#         "symbol",
-#         "landing_date",
-#         "project_prefix_underscore",
-#         "data_lake_bucket",
-#         "iceberg_lock_table",
-#     ],
-# )
+args = getResolvedOptions(
+    sys.argv,
+    [
+        "symbol",
+        "landing_date",
+        "project_prefix_underscore",
+        "data_lake_bucket",
+        "iceberg_lock_table",
+    ],
+)
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--symbol", required=True)
-parser.add_argument("--landing_date", required=True)
-parser.add_argument("--project_prefix_underscore", required=True)
-parser.add_argument("--data_lake_bucket", required=True)
-parser.add_argument("--iceberg_lock_table", required=True)
-args = parser.parse_args().__dict__
+# parser = argparse.ArgumentParser()
+# parser.add_argument("--symbol", required=True)
+# parser.add_argument("--landing_date", required=True)
+# parser.add_argument("--project_prefix_underscore", required=True)
+# parser.add_argument("--data_lake_bucket", required=True)
+# parser.add_argument("--iceberg_lock_table", required=True)
+# args = parser.parse_args().__dict__
 
 
 symbol = args["symbol"]
@@ -53,24 +53,24 @@ spark = (
     )
     .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
     # Disable vectorized reader
-    .config("spark.sql.parquet.enableVectorizedReader", "false")
-    .config("spark.sql.columnVector.offheap.enabled", "false")
-    .config("spark.memory.offHeap.enabled", "false")
-    .config(
-        "spark.sql.catalog.glue_catalog.read.parquet.vectorization.enabled", "false"
-    )
-    .config("spark.driver.memory", "2g")
-    .config("spark.driver.extraJavaOptions", "-XX:MaxDirectMemorySize=1g")
-    .config("spark.sql.codegen.wholeStage", "false")
-    .config(
-        "spark.jars.packages",
-        ",".join(
-            [
-                "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.1",
-                "org.apache.iceberg:iceberg-aws-bundle:1.7.1",
-            ]
-        ),
-    )
+    # .config("spark.sql.parquet.enableVectorizedReader", "false")
+    # .config("spark.sql.columnVector.offheap.enabled", "false")
+    # .config("spark.memory.offHeap.enabled", "false")
+    # .config(
+    #     "spark.sql.catalog.glue_catalog.read.parquet.vectorization.enabled", "false"
+    # )
+    # .config("spark.driver.memory", "2g")
+    # .config("spark.driver.extraJavaOptions", "-XX:MaxDirectMemorySize=1g")
+    # .config("spark.sql.codegen.wholeStage", "false")
+    # .config(
+    #     "spark.jars.packages",
+    #     ",".join(
+    #         [
+    #             "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.1",
+    #             "org.apache.iceberg:iceberg-aws-bundle:1.7.1",
+    #         ]
+    #     ),
+    # )
     .getOrCreate()
 )
 
