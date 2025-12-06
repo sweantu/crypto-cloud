@@ -46,7 +46,6 @@ def put_records_safe(kinesis_client, stream_name, records):
     if not records:
         logger.info("No records to send")
     logger.info(f"Putting {len(records)} records to Kinesis stream {stream_name}")
-    return
     try:
         response = kinesis_client.put_records(
             StreamName=stream_name,

@@ -8,18 +8,17 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import boto3
-
-from common.file import download_file, extract_file, remove_file
-from common.sqs import put_records_safe
+from shared_lib.file import download_file, extract_file, remove_file
+from shared_lib.kinesis import put_records_safe
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 STREAM_NAME = os.getenv("AGGTRADES_STREAM_NAME", "")
 QUEUE_URL = os.getenv("AGGTRADES_QUEUE_URL", "")
-REGION = os.getenv("REGION")
+REGION = os.getenv("AWS_REGION")
 DURATION = 60 * 1  # seconds
-NUM_OF_RECORDS = 10
+NUM_OF_RECORDS = 500
 
 
 class AggTrade:
@@ -73,10 +72,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--symbols", required=True)
     parser.add_argument("--landing_dates", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args().__dict__
 
-    symbols = json.loads(args.symbols)
-    landing_dates = json.loads(args.landing_dates)
+    symbols = json.loads(args["symbols"])
+    landing_dates = json.loads(args["landing_dates"])
     logger.info(f"Symbols: {symbols}")
     logger.info(f"Landing Dates: {landing_dates}")
     logger.info(f"Stream Name: {STREAM_NAME}")
@@ -84,14 +83,17 @@ if __name__ == "__main__":
 
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
-    if not os.path.exists(extract_dir):
-        os.makedirs(extract_dir)
     urls = [
         f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
         for symbol in symbols
         for landing_date in landing_dates
     ]
     zip_paths = [os.path.join(script_dir, url.split("/")[-1]) for url in urls]
+    csv_paths = [
+        f"{extract_dir}/{symbol}-aggTrades-{landing_date}.csv"
+        for symbol in symbols
+        for landing_date in landing_dates
+    ]
 
     start_t = time.time()
     with ThreadPoolExecutor() as executor:
@@ -107,11 +109,6 @@ if __name__ == "__main__":
         ]
         for future in futures:
             future.result()
-    csv_paths = [
-        f"{extract_dir}/{symbol}-aggTrades-{landing_date}.csv"
-        for symbol in symbols
-        for landing_date in landing_dates
-    ]
     end_t = time.time()
     logger.info(f"Download + Extract processed in {(end_t - start_t):.3f} seconds")
 
@@ -125,7 +122,7 @@ if __name__ == "__main__":
             ]
             futures = [
                 executor.submit(
-                    produce_messages, sqs_client, QUEUE_URL, symbol, file_path
+                    produce_messages, kinesis_client, STREAM_NAME, symbol, file_path
                 )
                 for symbol, file_path in zip(symbols, file_paths)
             ]
