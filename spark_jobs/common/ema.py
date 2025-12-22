@@ -1,32 +1,10 @@
 import logging
 
+from shared_lib.indicators import calc_ema
 from shared_lib.number import round_half_up
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def calc_ema(value, state):
-    if value is None:
-        return None
-    prev, buffer, period, k = (
-        state["prev"],
-        state["buffer"],
-        state["period"],
-        state["k"],
-    )
-    if prev is None:
-        buffer.append(value)
-        if len(buffer) == period:
-            ema = sum(buffer) / len(buffer)
-        else:
-            ema = None
-    else:
-        ema = (value - prev) * k + prev
-
-    state["prev"] = ema
-    return ema
-
 
 def make_ema_in_chunks(prev_ema7, prev_ema20):
     def ema_in_chunks(iterator):

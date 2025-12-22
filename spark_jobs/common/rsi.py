@@ -1,49 +1,10 @@
 import logging
 
+from shared_lib.indicators import calc_rsi
 from shared_lib.number import round_half_up
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def calc_rsi(diff, state):
-    """
-    Wilder RSI calculation (EMA-style state)
-    """
-    if diff is None:
-        return None
-
-    period = state["period"]
-    buffer = state["buffer"]
-    ag = state["ag"]
-    al = state["al"]
-    initialized = state["initialized"]
-
-    if not initialized:
-        buffer.append(diff)
-
-        if len(buffer) < period:
-            return None
-
-        ag = sum(d for d in buffer if d > 0) / period
-        al = sum(-d for d in buffer if d < 0) / period
-        state["initialized"] = True
-    else:
-        ag = ((ag * (period - 1)) + (diff if diff > 0 else 0.0)) / period
-        al = ((al * (period - 1)) + (-diff if diff < 0 else 0.0)) / period
-
-    state["ag"] = ag
-    state["al"] = al
-
-    if al == 0:
-        rsi = 100.0
-    elif ag == 0:
-        rsi = 0.0
-    else:
-        rs = ag / al
-        rsi = 100.0 - (100.0 / (1.0 + rs))
-
-    return rsi
 
 
 def make_rsi_in_chunks(prev_price=None, prev_ag=None, prev_al=None):
