@@ -83,13 +83,15 @@ class RsiEngine:
         prev_price = self.state["prev_price"]
         diff = close_price - prev_price if prev_price is not None else None
         self.state["prev_price"] = close_price
-        return calc_rsi(diff, self.state)
+        result = calc_rsi(diff, self.state)
+        return result
 
     def snapshot(self):
         return {
             "buffer_rsi_state": self.state["buffer"],
             "rsi_ag": self.state["ag"],
             "rsi_al": self.state["al"],
+            "close_price": self.state["prev_price"],
         }
 
 

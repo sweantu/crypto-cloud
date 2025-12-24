@@ -1,5 +1,5 @@
 ```sql
-SELECT DISTINCT symbol FROM testdb.engulfings ORDER BY symbol
+SELECT DISTINCT symbol FROM testdb.indicators ORDER BY symbol
 
 SELECT
     window_start AS time,
@@ -8,13 +8,17 @@ SELECT
     low_price,
     close_price,
     volume,
+    rsi6,
+    macd,
+    signal,
+    histogram,
     ema7,
     ema20,
     CASE
-        WHEN engulfing_pattern IS NOT NULL THEN close_price
+        WHEN pattern IS NOT NULL THEN close_price
         ELSE NULL
-    END AS engulfing_close
-FROM testdb.engulfings
+    END AS indicator_close
+FROM testdb.indicators
 WHERE
     symbol = '${symbol}'
     AND window_start BETWEEN

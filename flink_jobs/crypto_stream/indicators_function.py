@@ -6,7 +6,6 @@ from pyflink.datastream.functions import KeyedProcessFunction
 from pyflink.datastream.state import ValueStateDescriptor
 from shared_lib.engines import EmaEngine, PatternEngine, RsiEngine
 from shared_lib.indicators import detect_trend
-from shared_lib.number import round_half_up
 
 
 class IndicatorsFunction(KeyedProcessFunction):
@@ -51,18 +50,16 @@ class IndicatorsFunction(KeyedProcessFunction):
         # --- emit ---
         yield Row(
             **value.as_dict(),
-            rsi6=round_half_up(rsi6, 4) if rsi6 is not None else None,
+            rsi6=rsi6,
             rsi_ag=new_state["rsi_ag"],
             rsi_al=new_state["rsi_al"],
-            ema7=round_half_up(ema_res["ema7"], 4) if ema_res["ema7"] else None,
-            ema20=round_half_up(ema_res["ema20"], 4) if ema_res["ema20"] else None,
-            ema12=round_half_up(ema_res["ema12"], 4) if ema_res["ema12"] else None,
-            ema26=round_half_up(ema_res["ema26"], 4) if ema_res["ema26"] else None,
-            macd=round_half_up(ema_res["macd"], 4) if ema_res["macd"] else None,
-            signal=round_half_up(ema_res["signal"], 4) if ema_res["signal"] else None,
-            histogram=round_half_up(ema_res["histogram"], 4)
-            if ema_res["histogram"]
-            else None,
+            ema7=ema_res["ema7"],
+            ema20=ema_res["ema20"],
+            ema12=ema_res["ema12"],
+            ema26=ema_res["ema26"],
+            macd=ema_res["macd"],
+            signal=ema_res["signal"],
+            histogram=ema_res["histogram"],
             trend=trend,
             pattern=pattern,
         )

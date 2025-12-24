@@ -146,7 +146,7 @@ module "producers" {
 #   source = "./modules/grafana"
 
 #   project_prefix         = local.project_prefix
-#   region                 = var.region
+#   region                 = var.aws_region
 #   vpc_id                 = module.vpc.vpc_id
 #   public_subnet_ids      = module.vpc.public_subnet_ids
 #   ecs_execution_role_arn = module.ecs.ecs_execution_role_arn
