@@ -111,12 +111,6 @@ else:
         f"Table {transform_db}.{aggtrade_table} created for {symbol} on {landing_date}"
     )
 
-
-serving_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_serving_db"
-spark.sql(f"""
-CREATE DATABASE IF NOT EXISTS {serving_db}
-LOCATION 's3://{DATA_LAKE_BUCKET}/serving_zone/'
-""")
 sql_stmt = f"""
 select 
     group_id,
@@ -138,17 +132,17 @@ logger.info(f"SQL Statement:\n{sql_stmt}")
 df_kline = spark.sql(sql_stmt)
 
 klines_table = "klines"
-if table_exists(spark, serving_db, klines_table):
-    df_kline.writeTo(f"{serving_db}.{klines_table}").overwritePartitions()
+if table_exists(spark, transform_db, klines_table):
+    df_kline.writeTo(f"{transform_db}.{klines_table}").overwritePartitions()
     logger.info(
-        f"Table {serving_db}.{klines_table} overwritten for {symbol} on {landing_date}"
+        f"Table {transform_db}.{klines_table} overwritten for {symbol} on {landing_date}"
     )
 else:
-    df_kline.writeTo(f"{serving_db}.{klines_table}").tableProperty(
+    df_kline.writeTo(f"{transform_db}.{klines_table}").tableProperty(
         "format-version", "2"
     ).partitionedBy("symbol", "landing_date").createOrReplace()
     logger.info(
-        f"Table {serving_db}.{klines_table} created for {symbol} on {landing_date}"
+        f"Table {transform_db}.{klines_table} created for {symbol} on {landing_date}"
     )
 
 logger.info("✅ Transform job completed successfully")

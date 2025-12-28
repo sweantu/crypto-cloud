@@ -41,7 +41,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:25.5.1
     environment:
-      CLICKHOUSE_DB: testdb
+      CLICKHOUSE_DB: crypto_db
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: 123456
     ports:

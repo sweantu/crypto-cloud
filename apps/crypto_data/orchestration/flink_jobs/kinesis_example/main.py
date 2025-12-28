@@ -207,10 +207,10 @@ def main():
             ) WITH (
                 'connector' = 'clickhouse',
                 'url' = 'clickhouse://{output_clickhouse_ip}:8123',
-                'database-name' = 'testdb',
+                'database-name' = 'crypto_db',
                 'table-name' = 'output',
-                'username' = 'default',
-                'password' = '123456',
+                'username' = 'admin',
+                'password' = 'admin123',
                 'sink.batch-size' = '5000',
                 'sink.flush-interval' = '2s',
                 'sink.max-retries' = '3',

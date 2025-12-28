@@ -4,8 +4,7 @@ import sys
 
 from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession, types
-
-from spark_jobs.common.rsi import make_rsi_in_chunks
+from spark_jobs.common.ema import make_ema_in_chunks
 from spark_jobs.common.table import table_exists
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +40,7 @@ PROJECT_PREFIX_UNDERSCORE = args["project_prefix_underscore"]
 
 
 spark = (
-    SparkSession.builder.appName("TransformZone RSI")  # type: ignore
+    SparkSession.builder.appName("TransformZone Pattern One")  # type: ignore
     .config("spark.sql.session.timeZone", "UTC")
     .config(
         "spark.sql.extensions",
@@ -76,10 +75,10 @@ spark = (
 )
 
 
-serving_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_serving_db"
+transform_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_transform_db"
 klines_table = "klines"
 sql_stmt = f"""
-select * from {serving_db}.{klines_table}
+select * from {transform_db}.{klines_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
 """
 df_sorted = (
@@ -89,59 +88,87 @@ df_sorted = (
 )
 logger.info(f"Input rows: {df_sorted.count()}")
 
-
 schema = types.StructType(
     [
         *df_sorted.schema.fields,  # keep all original fields
-        types.StructField("rsi6", types.DoubleType(), True),
-        types.StructField("rsi_ag", types.DoubleType(), True),
-        types.StructField("rsi_al", types.DoubleType(), True),
+        types.StructField("ema7", types.DoubleType(), True),
+        types.StructField("ema20", types.DoubleType(), True),
     ]
 )
 
-
-rsi_table = "rsi6"
-
-if table_exists(spark, serving_db, rsi_table):
+pattern_one_table = "pattern_one"
+if table_exists(spark, transform_db, pattern_one_table):
     sql_stmt = f"""
-    SELECT
-        close_price AS prev_price,
-        rsi_ag      AS prev_ag,
-        rsi_al      AS prev_al
-    FROM {serving_db}.{rsi_table}
-    WHERE landing_date = date_sub(DATE('{landing_date}'), 1)
-      AND symbol = '{symbol}'
-    ORDER BY group_id DESC
-    LIMIT 1
+    select ema7, ema20 from {transform_db}.{pattern_one_table}
+    where landing_date = date_sub(DATE('{landing_date}'), 1) AND symbol = '{symbol}'
+    order by group_id desc
+    limit 1
     """
     row = spark.sql(sql_stmt).first()
-
-    if row:
-        prev_price = row["prev_price"]
-        prev_ag = row["prev_ag"]
-        prev_al = row["prev_al"]
-    else:
-        prev_price = prev_ag = prev_al = None
+    prev_ema7, prev_ema20 = (row["ema7"], row["ema20"]) if row else (None, None)
 else:
-    prev_price = prev_ag = prev_al = None
+    prev_ema7, prev_ema20 = None, None
 
+ema_in_chunks_with_state = make_ema_in_chunks(prev_ema7, prev_ema20)
 
-rsi_in_chunks_with_state = make_rsi_in_chunks(
-    prev_price=prev_price,
-    prev_ag=prev_ag,
-    prev_al=prev_al,
+df = df_sorted.mapInPandas(ema_in_chunks_with_state, schema)
+
+df.createOrReplaceTempView("temp")
+
+df = spark.sql("""
+with cte as (
+    select
+        *,
+        case 
+            when ema7 > ema20 then 'uptrend' 
+            when ema7 < ema20 then 'downtrend' 
+            else NULL 
+        end as trend,
+        abs(close_price - open_price) as body,
+        least(open_price, close_price) - low_price as lower_shadow,
+        high_price - greatest(open_price, close_price) as upper_shadow
+    from temp
 )
+select
+    group_id,
+    group_date,
+    open_time,
+    open_price,
+    high_price,
+    low_price,
+    close_price,
+    volume,
+    close_time,
+    landing_date,
+    symbol,
+    ema7,
+    ema20,
+    trend,
+    case 
+        when body > 0
+            and lower_shadow >= 2 * body
+            and upper_shadow <= 0.25 * body
+            and trend = 'uptrend'
+        then 'hanging man'
+        when body > 0
+            and lower_shadow >= 2 * body
+            and upper_shadow <= 0.25 * body
+            and trend = 'downtrend'
+        then 'hammer'
+        else NULL
+    end as pattern
+from cte
+""")
 
-df = df_sorted.mapInPandas(rsi_in_chunks_with_state, schema)
 
-if table_exists(spark, serving_db, rsi_table):
-    df.writeTo(f"{serving_db}.{rsi_table}").overwritePartitions()
+logger.info(f"Output rows: {df.count()}")
+
+
+if table_exists(spark, transform_db, pattern_one_table):
+    df.writeTo(f"{transform_db}.{pattern_one_table}").overwritePartitions()
 else:
-    (
-        df.writeTo(f"{serving_db}.{rsi_table}")
-        .tableProperty("format-version", "2")
-        .partitionedBy("symbol", "landing_date")
-        .createOrReplace()
-    )
+    df.writeTo(f"{transform_db}.{pattern_one_table}").tableProperty(
+        "format-version", "2"
+    ).partitionedBy("symbol", "landing_date").createOrReplace()
 
-logger.info("✅ Transform job completed successfully.")
+logger.info("✅Transform job completed successfully.")

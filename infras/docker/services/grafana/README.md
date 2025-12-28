@@ -1,5 +1,5 @@
 ```sql
-SELECT DISTINCT symbol FROM testdb.indicators ORDER BY symbol
+SELECT DISTINCT symbol FROM crypto_db.indicators ORDER BY symbol
 
 SELECT
     window_start AS time,
@@ -18,7 +18,7 @@ SELECT
         WHEN pattern IS NOT NULL THEN close_price
         ELSE NULL
     END AS indicator_close
-FROM testdb.indicators
+FROM crypto_db.indicators
 WHERE
     symbol = '${symbol}'
     AND window_start BETWEEN

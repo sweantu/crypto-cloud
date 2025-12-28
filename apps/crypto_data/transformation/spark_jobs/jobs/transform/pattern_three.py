@@ -4,7 +4,6 @@ import sys
 
 from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession, types
-
 from spark_jobs.common.ema import make_ema_in_chunks
 from spark_jobs.common.table import table_exists
 
@@ -76,10 +75,10 @@ spark = (
 )
 
 
-serving_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_serving_db"
+transform_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_transform_db"
 klines_table = "klines"
 sql_stmt = f"""
-select * from {serving_db}.{klines_table}
+select * from {transform_db}.{klines_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
 """
 df_sorted = (
@@ -99,9 +98,9 @@ schema = types.StructType(
 
 
 pattern_three_table = "pattern_three"
-if table_exists(spark, serving_db, pattern_three_table):
+if table_exists(spark, transform_db, pattern_three_table):
     sql_stmt = f"""
-    select ema7, ema20 from {serving_db}.{pattern_three_table}
+    select ema7, ema20 from {transform_db}.{pattern_three_table}
     where landing_date = date_sub(DATE('{landing_date}'), 1) AND symbol = '{symbol}'
     order by group_id desc
     limit 1
@@ -193,10 +192,10 @@ from cte
 logger.info(f"Output rows: {df.count()}")
 
 
-if table_exists(spark, serving_db, pattern_three_table):
-    df.writeTo(f"{serving_db}.{pattern_three_table}").overwritePartitions()
+if table_exists(spark, transform_db, pattern_three_table):
+    df.writeTo(f"{transform_db}.{pattern_three_table}").overwritePartitions()
 else:
-    df.writeTo(f"{serving_db}.{pattern_three_table}").tableProperty(
+    df.writeTo(f"{transform_db}.{pattern_three_table}").tableProperty(
         "format-version", "2"
     ).partitionedBy("symbol", "landing_date").createOrReplace()
 

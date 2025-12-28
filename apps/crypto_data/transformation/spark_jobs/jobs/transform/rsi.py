@@ -3,10 +3,9 @@ import logging
 import sys
 
 from awsglue.utils import getResolvedOptions
-from common.table import table_exists
 from pyspark.sql import SparkSession, types
-
-from spark_jobs.common.macd import make_macd_in_chunks
+from spark_jobs.common.rsi import make_rsi_in_chunks
+from spark_jobs.common.table import table_exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ PROJECT_PREFIX_UNDERSCORE = args["project_prefix_underscore"]
 
 
 spark = (
-    SparkSession.builder.appName("TransformZone MACD")  # type: ignore
+    SparkSession.builder.appName("TransformZone RSI")  # type: ignore
     .config("spark.sql.session.timeZone", "UTC")
     .config(
         "spark.sql.extensions",
@@ -76,10 +75,10 @@ spark = (
 )
 
 
-serving_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_serving_db"
+transform_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_transform_db"
 klines_table = "klines"
 sql_stmt = f"""
-select * from {serving_db}.{klines_table}
+select * from {transform_db}.{klines_table}
 where landing_date = DATE('{landing_date}') AND symbol = '{symbol}'
 """
 df_sorted = (
@@ -93,23 +92,22 @@ logger.info(f"Input rows: {df_sorted.count()}")
 schema = types.StructType(
     [
         *df_sorted.schema.fields,  # keep all original fields
-        types.StructField("ema12", types.DoubleType(), True),
-        types.StructField("ema26", types.DoubleType(), True),
-        types.StructField("macd", types.DoubleType(), True),
-        types.StructField("signal", types.DoubleType(), True),
-        types.StructField("histogram", types.DoubleType(), True),
+        types.StructField("rsi6", types.DoubleType(), True),
+        types.StructField("rsi_ag", types.DoubleType(), True),
+        types.StructField("rsi_al", types.DoubleType(), True),
     ]
 )
 
-macd_table = "macd"
 
-if table_exists(spark, serving_db, macd_table):
+rsi_table = "rsi6"
+
+if table_exists(spark, transform_db, rsi_table):
     sql_stmt = f"""
     SELECT
-        ema12      AS macd_ema12,
-        ema26      AS macd_ema26,
-        signal     AS macd_signal
-    FROM {serving_db}.{macd_table}
+        close_price AS prev_price,
+        rsi_ag      AS prev_ag,
+        rsi_al      AS prev_al
+    FROM {transform_db}.{rsi_table}
     WHERE landing_date = date_sub(DATE('{landing_date}'), 1)
       AND symbol = '{symbol}'
     ORDER BY group_id DESC
@@ -118,31 +116,31 @@ if table_exists(spark, serving_db, macd_table):
     row = spark.sql(sql_stmt).first()
 
     if row:
-        prev_ema12 = row["macd_ema12"]
-        prev_ema26 = row["macd_ema26"]
-        prev_signal = row["macd_signal"]
+        prev_price = row["prev_price"]
+        prev_ag = row["prev_ag"]
+        prev_al = row["prev_al"]
     else:
-        prev_ema12 = prev_ema26 = prev_signal = None
+        prev_price = prev_ag = prev_al = None
 else:
-    prev_ema12 = prev_ema26 = prev_signal = None
+    prev_price = prev_ag = prev_al = None
 
-macd_in_chunks_with_state = make_macd_in_chunks(
-    prev_ema12=prev_ema12,
-    prev_ema26=prev_ema26,
-    prev_signal=prev_signal,
+
+rsi_in_chunks_with_state = make_rsi_in_chunks(
+    prev_price=prev_price,
+    prev_ag=prev_ag,
+    prev_al=prev_al,
 )
 
+df = df_sorted.mapInPandas(rsi_in_chunks_with_state, schema)
 
-df = df_sorted.mapInPandas(macd_in_chunks_with_state, schema)
-
-if table_exists(spark, serving_db, macd_table):
-    df.writeTo(f"{serving_db}.{macd_table}").overwritePartitions()
+if table_exists(spark, transform_db, rsi_table):
+    df.writeTo(f"{transform_db}.{rsi_table}").overwritePartitions()
 else:
     (
-        df.writeTo(f"{serving_db}.{macd_table}")
+        df.writeTo(f"{transform_db}.{rsi_table}")
         .tableProperty("format-version", "2")
         .partitionedBy("symbol", "landing_date")
         .createOrReplace()
     )
 
-logger.info("✅ MACD transform job completed successfully.")
+logger.info("✅ Transform job completed successfully.")
