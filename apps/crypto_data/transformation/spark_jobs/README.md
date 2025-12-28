@@ -6,7 +6,6 @@ spark-submit \
     jobs/landing/aggtrades.py \
     --symbol "ADAUSDT" \
     --landing_date "2025-10-02" \
-    --project_prefix_underscore $PROJECT_PREFIX_UNDERSCORE \
     --data_lake_bucket $DATA_LAKE_BUCKET \
     --iceberg_lock_table $ICEBERG_LOCK_TABLE
 ```

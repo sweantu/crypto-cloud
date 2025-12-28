@@ -2,7 +2,7 @@ resource "aws_athena_workgroup" "athena_wg" {
   name  = "${var.project_prefix}-athena-wg"
   state = "ENABLED"
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
     ignore_changes  = [state, configuration]
   }
 

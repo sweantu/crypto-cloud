@@ -16,7 +16,7 @@ args = getResolvedOptions(
     [
         "symbol",
         "landing_date",
-        "project_prefix_underscore",
+        "transform_db",
         "data_lake_bucket",
         "iceberg_lock_table",
     ],
@@ -25,7 +25,7 @@ args = getResolvedOptions(
 # parser = argparse.ArgumentParser()
 # parser.add_argument("--symbol", required=True)
 # parser.add_argument("--landing_date", required=True)
-# parser.add_argument("--project_prefix_underscore", required=True)
+# parser.add_argument("--transform_db", required=True)
 # parser.add_argument("--data_lake_bucket", required=True)
 # parser.add_argument("--iceberg_lock_table", required=True)
 # args = parser.parse_args().__dict__
@@ -35,7 +35,7 @@ landing_date = args["landing_date"]
 
 DATA_LAKE_BUCKET = args["data_lake_bucket"]
 ICEBERG_LOCK_TABLE = args["iceberg_lock_table"]
-PROJECT_PREFIX_UNDERSCORE = args["project_prefix_underscore"]
+TRANSFORM_DB = args["transform_db"]
 
 spark = (
     SparkSession.builder.appName("TransformZone")  # type: ignore
@@ -91,11 +91,7 @@ df = (
     .withColumn("symbol", F.lit(symbol))
 )
 
-transform_db = f"glue_catalog.{PROJECT_PREFIX_UNDERSCORE}_transform_db"
-spark.sql(f"""
-CREATE DATABASE IF NOT EXISTS {transform_db}
-LOCATION 's3://{DATA_LAKE_BUCKET}/transform_zone/'
-""")
+transform_db = f"glue_catalog.{TRANSFORM_DB}"
 
 aggtrade_table = "aggtrades"
 if table_exists(spark, transform_db, aggtrade_table):

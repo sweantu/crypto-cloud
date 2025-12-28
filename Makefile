@@ -1,4 +1,3 @@
-TF_STATE=infras/terraform/terraform.tfstate
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
 
 tf-init:

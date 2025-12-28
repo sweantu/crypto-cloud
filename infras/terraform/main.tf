@@ -22,9 +22,11 @@ module "vpc" {
 }
 
 module "data_lake" {
-  source                  = "./modules/data-lake"
-  bucket_name             = "${local.project_prefix}-data-lake-bucket"
-  iceberg_lock_table_name = "${local.project_prefix_underscore}_iceberg_lock_table"
+  source                    = "./modules/data-lake"
+  bucket_name               = "${local.project_prefix}-data-lake-bucket"
+  iceberg_lock_table_name   = "${local.project_prefix_underscore}_iceberg_lock_table"
+  transform_db_name         = "${local.project_prefix_underscore}_transform_db"
+  transform_db_location_uri = "s3://${local.project_prefix}-data-lake-bucket/transform_zone/"
 }
 
 module "clickhouse" {

@@ -1,9 +1,3 @@
-output "project_prefix" {
-  value = local.project_prefix
-}
-output "project_prefix_underscore" {
-  value = local.project_prefix_underscore
-}
 output "availability_zones" {
   value = local.azs
 }
@@ -22,6 +16,10 @@ output "public_subnet_ids" {
 
 output "data_lake_bucket_name" {
   value = module.data_lake.data_lake_bucket_name
+}
+
+output "transform_db_name" {
+  value = module.data_lake.transform_db_name
 }
 
 output "iceberg_lock_table_name" {

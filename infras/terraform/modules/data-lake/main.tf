@@ -34,3 +34,13 @@ resource "aws_dynamodb_table" "iceberg_lock_table" {
     type = "S"
   }
 }
+
+resource "aws_glue_catalog_database" "transform_db" {
+  name = var.transform_db_name
+
+  location_uri = var.transform_db_location_uri
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}

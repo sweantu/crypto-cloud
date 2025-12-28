@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 #     [
 #         "symbol",
 #         "landing_date",
-#         "project_prefix_underscore",
+#         "transform_db",
 #         "data_lake_bucket",
 #         "iceberg_lock_table",
 #     ],
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser()
 parser.add_argument("--symbol", required=True)
 parser.add_argument("--landing_date", required=True)
-parser.add_argument("--project_prefix_underscore", required=True)
+parser.add_argument("--transform_db", required=True)
 parser.add_argument("--data_lake_bucket", required=True)
 parser.add_argument("--iceberg_lock_table", required=True)
 args = parser.parse_args().__dict__
@@ -36,7 +36,7 @@ args = parser.parse_args().__dict__
 symbol = args["symbol"]
 landing_date = args["landing_date"]
 
-PROJECT_PREFIX_UNDERSCORE = args["project_prefix_underscore"]
+TRANSFORM_DB = args["transform_db"]
 DATA_LAKE_BUCKET = args["data_lake_bucket"]
 ICEBERG_LOCK_TABLE = args["iceberg_lock_table"]
 
