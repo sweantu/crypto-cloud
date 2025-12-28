@@ -1,6 +1,6 @@
 
 resource "aws_security_group" "clickhouse_sg" {
-  name   = "${var.project_prefix}-clickhouse-sg"
+  name   = var.clickhouse_sg_name
   vpc_id = var.vpc_id
 
   ingress {
@@ -40,11 +40,11 @@ resource "aws_instance" "clickhouse" {
   instance_type               = var.clickhouse_instance_type
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [aws_security_group.clickhouse_sg.id]
-  key_name                    = var.key_name
+  key_name                    = var.ssh_key
   associate_public_ip_address = true
 
   root_block_device {
-    volume_size = 50
+    volume_size = var.clickhouse_volume_size
     volume_type = "gp3"
   }
 
@@ -104,6 +104,6 @@ docker exec clickhouse clickhouse-client --query "SELECT version();" >/tmp/ch_ve
 EOF
 
   tags = {
-    Name = "${var.project_prefix}-clickhouse-instance"
+    Name = var.clickhouse_instance_name
   }
 }

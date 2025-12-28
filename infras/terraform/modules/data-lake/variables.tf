@@ -1,7 +1,7 @@
-variable "project_prefix" {
+variable "bucket_name" {
   type = string
 }
 
-variable "project_prefix_underscore" {
+variable "iceberg_lock_table_name" {
   type = string
 }

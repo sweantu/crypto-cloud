@@ -1,11 +1,3 @@
-variable "project_prefix" {
-  type = string
-}
-
-variable "project_prefix_underscore" {
-  type = string
-}
-
 variable "vpc_id" {
   type = string
 }
@@ -13,9 +5,16 @@ variable "subnet_id" {
   type = string
 }
 
-variable "key_name" {
+variable "ssh_key" {
   type      = string
   sensitive = true
+}
+
+variable "clickhouse_sg_name" {
+  type = string
+}
+variable "clickhouse_instance_name" {
+  type = string
 }
 
 variable "clickhouse_instance_type" {
@@ -24,6 +23,10 @@ variable "clickhouse_instance_type" {
 
 variable "clickhouse_ami_id" {
   type = string
+}
+
+variable "clickhouse_volume_size" {
+  type = number
 }
 
 variable "clickhouse_db" {

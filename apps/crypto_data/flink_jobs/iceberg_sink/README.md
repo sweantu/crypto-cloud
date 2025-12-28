@@ -125,14 +125,14 @@ additional Runtime Properties, as part of the application configuration:
 
 1. Make sure you have created the Kinesis Streams and you have a valid AWS session that allows you to publish to the Streams (the way of doing it depends on your setup)
 2. Run `mvn package` once, from this directory. This step is required to download the jar dependencies - the Kinesis connector in this case
-3. Set the environment variable `IS_LOCAL=true`. You can do from the prompt or in the run profile of the IDE
+3. Set the environment variable `FLINK_LOCAL=true`. You can do from the prompt or in the run profile of the IDE
 4. Run `main.py`
 
 You can also run the python script directly from the command line, like `python main.py`. This still require running `mvn package` before.
 
 If you are using Virtual Environments, make sure the to select the venv as a runtime in your IDE.
 
-If you forget the set the environment variable `IS_LOCAL=true` or forget to run `mvn package` the application fails on start.
+If you forget the set the environment variable `FLINK_LOCAL=true` or forget to run `mvn package` the application fails on start.
 
 > 🚨 The application does not log or print anything. 
 > If you do not see any output in the console, it does not mean the application is not running.

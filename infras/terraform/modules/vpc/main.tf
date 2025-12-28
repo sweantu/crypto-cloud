@@ -3,26 +3,26 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
-    Name = "${var.project_prefix}-vpc"
+    Name = var.vpc_name
   }
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.project_prefix}-igw"
+    Name = var.igw_name
   }
 }
 
 resource "aws_subnet" "public" {
-  for_each = { for idx, az in var.azs : az => az }
+  for_each = toset(var.azs)
 
   vpc_id                  = aws_vpc.this.id
   availability_zone       = each.key
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, 10 + index(var.azs, each.key)) # /24-style
   map_public_ip_on_launch = true
   tags = {
-    Name = "${var.project_prefix}-public-${each.key}"
+    Name = var.public_subnet_names[each.key]
   }
 }
 
@@ -30,7 +30,7 @@ resource "aws_subnet" "public" {
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.project_prefix}-public-rt"
+    Name = var.public_route_table_name
   }
 }
 

@@ -1,4 +1,3 @@
-export AWS_PROFILE="default"
 export AWS_SSO_CACHE="$HOME/.aws/cli/cache"
 mkdir -p "$AWS_SSO_CACHE"
 

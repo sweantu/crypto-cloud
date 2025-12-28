@@ -1,5 +1,14 @@
-TF_STATE=terraform/terraform.tfstate
+TF_STATE=infras/terraform/terraform.tfstate
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
+
+tf-init:
+	cd infras/terraform && direnv exec . terraform init
+
+tf-plan:
+	cd infras/terraform && direnv exec . terraform plan
+
+tf-apply:
+	cd infras/terraform && direnv exec . terraform apply -auto-approve
 
 ssh:
 	@ins="$(ins)"; \
@@ -7,7 +16,7 @@ ssh:
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip
 
 log-ec2:
 	@ins="$(ins)"; \
@@ -15,7 +24,7 @@ log-ec2:
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
 
 log-ec2-docker:
 	@ins="$(ins)"; \
@@ -23,7 +32,7 @@ log-ec2-docker:
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo docker logs $$ins | tail -200"
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip "sudo docker logs $$ins | tail -200"
 
 stop-ec2:
 	@ins="$(ins)"; \
@@ -52,7 +61,7 @@ describe-ec2:
 sync-clickhouse:
 	@instance_id="$$( $(TERRAFORM_OUTPUT) clickhouse_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" services/clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
+	rsync -avz -e "ssh -i ~/.ssh/$(SSH_KEY)" services/clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
 
 jupyter-convert:
 	@path="$(path)"; \

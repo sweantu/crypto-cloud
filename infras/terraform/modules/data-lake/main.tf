@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "data_lake_bucket" {
-  bucket        = "${var.project_prefix}-data-lake-bucket"
+  bucket        = var.bucket_name
   force_destroy = true
 }
 
@@ -25,7 +25,7 @@ resource "aws_s3_bucket_ownership_controls" "data_lake_bucket" {
 # DynamoDB table for Iceberg locking
 # -----------------------------
 resource "aws_dynamodb_table" "iceberg_lock_table" {
-  name         = "${var.project_prefix_underscore}_iceberg_lock_table"
+  name         = var.iceberg_lock_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "lock_key"
 
