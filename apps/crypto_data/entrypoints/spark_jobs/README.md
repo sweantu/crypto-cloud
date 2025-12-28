@@ -5,7 +5,8 @@ spark-submit \
     --py-files ../build/glue_job_libs/extra.zip \
     jobs/landing/aggtrades.py \
     --symbol "ADAUSDT" \
-    --landing_date "2025-10-02" \
+    --landing_date "2025-09-28" \
     --data_lake_bucket $DATA_LAKE_BUCKET \
-    --iceberg_lock_table $ICEBERG_LOCK_TABLE
+    --iceberg_lock_table $ICEBERG_LOCK_TABLE \
+    --transform_db $TRANSFORM_DB
 ```

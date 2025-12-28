@@ -30,13 +30,13 @@ output "clickhouse_instance_id" {
   value = module.clickhouse.clickhouse_instance_id
 }
 
-# output "athena_wg_name" {
-#   value = module.athena.athena_wg_name
-# }
+output "athena_wg_name" {
+  value = module.athena.athena_wg_name
+}
 
-# output "athena_output_location" {
-#   value = module.athena.athena_output_location
-# }
+output "athena_output_location" {
+  value = module.athena.athena_output_location
+}
 
 # output "glue_scripts_bucket_name" {
 #   value = module.glue.glue_scripts_bucket_name

@@ -44,13 +44,13 @@ module "clickhouse" {
   ssh_key                  = var.ssh_key
 }
 
-# module "athena" {
-#   source = "./modules/athena"
+module "athena" {
+  source                = "./modules/athena"
+  athena_workgroup_name = "${local.project_prefix}-athena-wg"
+  data_lake_bucket_name = module.data_lake.data_lake_bucket_name
+  athena_output_prefix  = "athena_output/"
 
-#   project_prefix        = local.project_prefix
-#   data_lake_bucket_name = module.data_lake.data_lake_bucket_name
-#   athena_output_prefix  = "athena_output/"
-# }
+}
 
 # module "glue" {
 #   source = "./modules/glue"

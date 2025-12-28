@@ -1,4 +1,4 @@
-variable "project_prefix" {
+variable "athena_workgroup_name" {
   type = string
 }
 
