@@ -74,7 +74,7 @@ spark = (
 
 
 if __name__ == "__main__":
-    from crypto_data.transformation.rsi import transform_rsi_job
+    from transformation.rsi import transform_rsi_job
 
     transform_rsi_job(
         spark,

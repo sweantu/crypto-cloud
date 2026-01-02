@@ -6,7 +6,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession, types
 from spark_jobs.common.macd import make_macd_in_chunks
 
-from apps.crypto_data.common.spark import table_exists
+from common.spark import table_exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

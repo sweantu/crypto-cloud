@@ -74,7 +74,7 @@ spark = (
 
 
 if __name__ == "__main__":
-    from crypto_data.transformation.spark_jobs.jobs.transform.macd import (
+    from transformation.spark_jobs.jobs.transform.macd import (
         macd_transform_job,
     )
 

@@ -74,7 +74,7 @@ spark = (
 
 
 if __name__ == "__main__":
-    from crypto_data.transformation.patterns.pattern_one import transform_job
+    from transformation.patterns.pattern_one import transform_job
 
     transform_job(
         spark,
