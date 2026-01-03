@@ -1,57 +1,91 @@
 services:
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: crypto-cloud-minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
       - minio_data:/data
-
+    networks:
+      - crypto-cloud-network
+  
   postgres:
-    image: postgres:15
+    image: custom-postgres:15
+    container_name: crypto-cloud-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+      AIRFLOW_DB_USERNAME: ${AIRFLOW_DB_USERNAME}
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+      AIRFLOW_DB_NAME: ${AIRFLOW_DB_NAME}
+
+      HIVE_DB_USER: ${HIVE_DB_USER}
+      HIVE_DB_PASSWORD: ${HIVE_DB_PASSWORD}
+      HIVE_DB_NAME: ${HIVE_DB_NAME}
     ports:
       - "5432:5432"
     volumes:
-      - ./services/postgres/init-scripts:/docker-entrypoint-initdb.d
+      # - ./services/postgres/init-scripts:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - crypto-cloud-network
 
   hive-metastore:
     image: custom-hive:4.0.1
+    container_name: crypto-cloud-hive-metastore
     environment:
       SERVICE_NAME: metastore
       DB_DRIVER: postgres
       SERVICE_OPTS: >
-        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=hive
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/${HIVE_DB_NAME}
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionUserName=${HIVE_DB_USER}
+        -Djavax.jdo.option.ConnectionPassword=${HIVE_DB_PASSWORD}
+
+        -Dhive.metastore.warehouse.dir=s3a://warehouse/
+        -Dhive.metastore.uris=thrift://0.0.0.0:9083
+
+        -Dfs.s3a.endpoint=http://minio:9000
+        -Dfs.s3a.access.key=${MINIO_USER}
+        -Dfs.s3a.secret.key=${MINIO_PASSWORD}
+        -Dfs.s3a.path.style.access=true
+        -Dfs.s3a.connection.ssl.enabled=false
     depends_on:
       - postgres
       - minio
     ports:
       - "9083:9083"
-    volumes:
-      - hive_warehouse:/opt/hive/data/warehouse
+    networks:
+      - crypto-cloud-network
 
   clickhouse:
-    image: clickhouse/clickhouse-server:25.5.1
+    image: clickhouse/clickhouse-server:25.8
+    container_name: crypto-cloud-clickhouse
     environment:
-      CLICKHOUSE_DB: crypto_db
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: 123456
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
     ports:
       - "8123:8123"
       - "9100:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - crypto-cloud-network
+
 
 volumes:
   minio_data:
-  hive_warehouse:
   postgres_data:
   clickhouse_data:
+
+networks:
+  crypto-cloud-network:
+    external: true
