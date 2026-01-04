@@ -6,37 +6,37 @@ output "account_id" {
   value = local.account_id
 }
 
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
+# output "vpc_id" {
+#   value = module.vpc.vpc_id
+# }
 
-output "public_subnet_ids" {
-  value = module.vpc.public_subnet_ids
-}
+# output "public_subnet_ids" {
+#   value = module.vpc.public_subnet_ids
+# }
 
-output "data_lake_bucket_name" {
-  value = module.data_lake.data_lake_bucket_name
-}
+# output "data_lake_bucket_name" {
+#   value = module.data_lake.data_lake_bucket_name
+# }
 
-output "transform_db_name" {
-  value = module.data_lake.transform_db_name
-}
+# output "transform_db_name" {
+#   value = module.data_lake.transform_db_name
+# }
 
-output "iceberg_lock_table_name" {
-  value = module.data_lake.iceberg_lock_table_name
-}
+# output "iceberg_lock_table_name" {
+#   value = module.data_lake.iceberg_lock_table_name
+# }
 
-output "clickhouse_instance_id" {
-  value = module.clickhouse.clickhouse_instance_id
-}
+# output "clickhouse_instance_id" {
+#   value = module.clickhouse.clickhouse_instance_id
+# }
 
-output "athena_wg_name" {
-  value = module.athena.athena_wg_name
-}
+# output "athena_wg_name" {
+#   value = module.athena.athena_wg_name
+# }
 
-output "athena_output_location" {
-  value = module.athena.athena_output_location
-}
+# output "athena_output_location" {
+#   value = module.athena.athena_output_location
+# }
 
 # output "glue_scripts_bucket_name" {
 #   value = module.glue.glue_scripts_bucket_name

@@ -45,12 +45,31 @@ spark = (
         "spark.sql.extensions",
         "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
     )
-    .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog")
+    # Glue Catalog
+    # .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog")
+    # .config(
+    #     "spark.sql.catalog.glue_catalog.catalog-impl",
+    #     "org.apache.iceberg.aws.glue.GlueCatalog",
+    # )
+    # .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
+    # Hive Catalog
+    .config("spark.sql.catalog.hive_catalog", "org.apache.iceberg.spark.SparkCatalog")
     .config(
-        "spark.sql.catalog.glue_catalog.catalog-impl",
-        "org.apache.iceberg.aws.glue.GlueCatalog",
+        "spark.sql.catalog.hive_catalog.catalog-impl",
+        "org.apache.iceberg.hive.HiveCatalog",
     )
-    .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
+    .config(
+        "spark.sql.catalog.hive_catalog.uri",
+        "thrift://localhost:9083",
+    )
+    # minio specific configs
+    .config(
+        "spark.hadoop.fs.s3a.aws.credentials.provider",
+        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+    )
+    .config("spark.hadoop.fs.s3a.access.key", "admin")
+    .config("spark.hadoop.fs.s3a.secret.key", "admin123")
+    .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000")
     # Disable vectorized reader
     .config("spark.sql.parquet.enableVectorizedReader", "false")
     .config("spark.sql.columnVector.offheap.enabled", "false")
@@ -67,9 +86,13 @@ spark = (
             [
                 "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.1",
                 "org.apache.iceberg:iceberg-aws-bundle:1.7.1",
+                "org.apache.hadoop:hadoop-aws:3.3.4",
             ]
         ),
     )
+    .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    .config("spark.hadoop.fs.s3a.path.style.access", "true")
     .getOrCreate()
 )
 
@@ -77,10 +100,11 @@ spark = (
 if __name__ == "__main__":
     from transformation.batch.pattern_two.main import transform_pattern_two
 
+    transform_db = f"hive_catalog.{TRANSFORM_DB}"
     transform_pattern_two(
         spark=spark,
         symbol=symbol,
         landing_date=landing_date,
-        transform_db=TRANSFORM_DB,
+        transform_db=transform_db,
     )
     logger.info("✅Transform pattern two completed successfully.")

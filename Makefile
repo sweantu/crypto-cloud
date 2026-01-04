@@ -1,18 +1,18 @@
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
 
 tf-init:
-	cd infras/terraform && direnv exec . terraform init
+	cd infras/terraform && terraform init
 
 tf-plan:
-	cd infras/terraform && direnv exec . terraform plan
+	cd infras/terraform && terraform plan
 
 tf-apply:
-	cd infras/terraform && direnv exec . terraform apply -auto-approve
+	cd infras/terraform && terraform apply -auto-approve
 
 docker-build:
 	bash ./scripts/docker.sh
 docker-storage-up:
-	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml up -d
+	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml up
 docker-storage-down:
 	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml down
 docker-batch-up:

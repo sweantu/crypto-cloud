@@ -15,6 +15,9 @@ services:
       - crypto-cloud-network
   
   postgres:
+    build:
+      context: ./services/postgres
+      dockerfile: Dockerfile
     image: custom-postgres:15
     container_name: crypto-cloud-postgres
     environment:
@@ -38,25 +41,22 @@ services:
       - crypto-cloud-network
 
   hive-metastore:
-    image: custom-hive:4.0.1
+    build:
+      context: ./services/hive
+      dockerfile: Dockerfile
+    image: custom-hive:4.0.0
     container_name: crypto-cloud-hive-metastore
     environment:
       SERVICE_NAME: metastore
       DB_DRIVER: postgres
-      SERVICE_OPTS: >
-        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/${HIVE_DB_NAME}
-        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
-        -Djavax.jdo.option.ConnectionUserName=${HIVE_DB_USER}
-        -Djavax.jdo.option.ConnectionPassword=${HIVE_DB_PASSWORD}
+      HIVE_CUSTOM_CONF_DIR: /opt/hive/conf
 
-        -Dhive.metastore.warehouse.dir=s3a://warehouse/
-        -Dhive.metastore.uris=thrift://0.0.0.0:9083
-
-        -Dfs.s3a.endpoint=http://minio:9000
-        -Dfs.s3a.access.key=${MINIO_USER}
-        -Dfs.s3a.secret.key=${MINIO_PASSWORD}
-        -Dfs.s3a.path.style.access=true
-        -Dfs.s3a.connection.ssl.enabled=false
+      HIVE_DB_USER: ${HIVE_DB_USER}
+      HIVE_DB_PASSWORD: ${HIVE_DB_PASSWORD}
+      HIVE_DB_NAME: ${HIVE_DB_NAME}
+      MINIO_USER: ${MINIO_USER}
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
+      DATA_LAKE_BUCKET: ${DATA_LAKE_BUCKET}
     depends_on:
       - postgres
       - minio

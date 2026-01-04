@@ -8,3 +8,10 @@ def table_exists(spark: SparkSession, database: str, table: str) -> bool:
         return True
     except AnalysisException:
         return False
+
+def database_exists(spark: SparkSession, database) -> bool:
+    try:
+        spark.catalog.getDatabase(database)
+        return True
+    except AnalysisException:
+        return False

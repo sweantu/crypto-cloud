@@ -24,13 +24,13 @@ set -a
 source "$ENV_FILE"
 set +a
 
-echo "🔄 Loading AWS credentials"
-source ./scripts/aws.sh
+# echo "🔄 Loading AWS credentials"
+# source ./scripts/aws.sh
 
-echo "🔄 Loading Terraform input"
-source ./scripts/terraform_input.sh
+# echo "🔄 Loading Terraform input"
+# source ./scripts/terraform_input.sh
 
-echo "🔄 Loading Terraform output"
-source ./scripts/terraform_output.sh
+# echo "🔄 Loading Terraform output"
+# source ./scripts/terraform_output.sh
 
 echo "✅ Setup completed successfully"

@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 def transform_pattern_two(spark, symbol, landing_date, transform_db):
-    transform_db = f"glue_catalog.{transform_db}"
     klines_table = "klines"
     pattern_two_table = "pattern_two"
 

@@ -1,6 +1,8 @@
 import argparse
 import logging
 
+from common.spark import database_exists
+
 # import sys
 # from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession
@@ -43,12 +45,31 @@ spark = (
         "spark.sql.extensions",
         "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
     )
-    .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog")
+    # Glue Catalog
+    # .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog")
+    # .config(
+    #     "spark.sql.catalog.glue_catalog.catalog-impl",
+    #     "org.apache.iceberg.aws.glue.GlueCatalog",
+    # )
+    # .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
+    # Hive Catalog
+    .config("spark.sql.catalog.hive_catalog", "org.apache.iceberg.spark.SparkCatalog")
     .config(
-        "spark.sql.catalog.glue_catalog.catalog-impl",
-        "org.apache.iceberg.aws.glue.GlueCatalog",
+        "spark.sql.catalog.hive_catalog.catalog-impl",
+        "org.apache.iceberg.hive.HiveCatalog",
     )
-    .config("spark.sql.catalog.glue_catalog.lock.table", f"{ICEBERG_LOCK_TABLE}")
+    .config(
+        "spark.sql.catalog.hive_catalog.uri",
+        "thrift://localhost:9083",
+    )
+    # minio specific configs
+    .config(
+        "spark.hadoop.fs.s3a.aws.credentials.provider",
+        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+    )
+    .config("spark.hadoop.fs.s3a.access.key", "admin")
+    .config("spark.hadoop.fs.s3a.secret.key", "admin123")
+    .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000")
     # Disable vectorized Parquet reader to avoid off-heap memory issues
     .config("spark.sql.parquet.enableVectorizedReader", "false")
     .config("spark.sql.columnVector.offheap.enabled", "false")
@@ -78,10 +99,16 @@ spark = (
 if __name__ == "__main__":
     from transformation.batch.klines.main import transform_klines
 
+    transform_db = f"hive_catalog.{TRANSFORM_DB}"
+    if not database_exists(spark, transform_db):
+        spark.sql(f"""
+        CREATE DATABASE IF NOT EXISTS {transform_db}
+        LOCATION 's3a://{DATA_LAKE_BUCKET}/transform_zone/'
+        """)
     transform_klines(
         spark,
         symbol,
         landing_date,
         data_lake_bucket=DATA_LAKE_BUCKET,
-        transform_db=TRANSFORM_DB,
+        transform_db=transform_db,
     )

@@ -11,46 +11,46 @@ locals {
   azs                       = slice(data.aws_availability_zones.available.names, 0, 2)
 }
 
-module "vpc" {
-  source                  = "./modules/vpc"
-  vpc_cidr                = "10.0.0.0/16"
-  azs                     = local.azs
-  vpc_name                = "${local.project_prefix}-vpc"
-  igw_name                = "${local.project_prefix}-igw"
-  public_subnet_names     = { for az in local.azs : az => "${local.project_prefix}-public-${az}" }
-  public_route_table_name = "${local.project_prefix}-public-rt"
-}
+# module "vpc" {
+#   source                  = "./modules/vpc"
+#   vpc_cidr                = "10.0.0.0/16"
+#   azs                     = local.azs
+#   vpc_name                = "${local.project_prefix}-vpc"
+#   igw_name                = "${local.project_prefix}-igw"
+#   public_subnet_names     = { for az in local.azs : az => "${local.project_prefix}-public-${az}" }
+#   public_route_table_name = "${local.project_prefix}-public-rt"
+# }
 
-module "data_lake" {
-  source                    = "./modules/data-lake"
-  bucket_name               = "${local.project_prefix}-data-lake-bucket"
-  iceberg_lock_table_name   = "${local.project_prefix_underscore}_iceberg_lock_table"
-  transform_db_name         = "${local.project_prefix_underscore}_transform_db"
-  transform_db_location_uri = "s3://${local.project_prefix}-data-lake-bucket/transform_zone/"
-}
+# module "data_lake" {
+#   source                    = "./modules/data-lake"
+#   bucket_name               = "${local.project_prefix}-data-lake-bucket"
+#   iceberg_lock_table_name   = "${local.project_prefix_underscore}_iceberg_lock_table"
+#   transform_db_name         = "${local.project_prefix_underscore}_transform_db"
+#   transform_db_location_uri = "s3://${local.project_prefix}-data-lake-bucket/transform_zone/"
+# }
 
-module "clickhouse" {
-  source                   = "./modules/clickhouse"
-  vpc_id                   = module.vpc.vpc_id
-  subnet_id                = module.vpc.public_subnet_ids[0]
-  clickhouse_sg_name       = "${local.project_prefix}-clickhouse-sg"
-  clickhouse_instance_name = "${local.project_prefix}-clickhouse-instance"
-  clickhouse_db            = var.clickhouse_db
-  clickhouse_user          = var.clickhouse_user
-  clickhouse_password      = var.clickhouse_password
-  clickhouse_instance_type = "t3.medium"
-  clickhouse_ami_id        = "ami-0827b3068f1548bf6"
-  clickhouse_volume_size   = 50
-  ssh_key                  = var.ssh_key
-}
+# module "clickhouse" {
+#   source                   = "./modules/clickhouse"
+#   vpc_id                   = module.vpc.vpc_id
+#   subnet_id                = module.vpc.public_subnet_ids[0]
+#   clickhouse_sg_name       = "${local.project_prefix}-clickhouse-sg"
+#   clickhouse_instance_name = "${local.project_prefix}-clickhouse-instance"
+#   clickhouse_db            = var.clickhouse_db
+#   clickhouse_user          = var.clickhouse_user
+#   clickhouse_password      = var.clickhouse_password
+#   clickhouse_instance_type = "t3.medium"
+#   clickhouse_ami_id        = "ami-0827b3068f1548bf6"
+#   clickhouse_volume_size   = 50
+#   ssh_key                  = var.ssh_key
+# }
 
-module "athena" {
-  source                = "./modules/athena"
-  athena_workgroup_name = "${local.project_prefix}-athena-wg"
-  data_lake_bucket_name = module.data_lake.data_lake_bucket_name
-  athena_output_prefix  = "athena_output/"
+# module "athena" {
+#   source                = "./modules/athena"
+#   athena_workgroup_name = "${local.project_prefix}-athena-wg"
+#   data_lake_bucket_name = module.data_lake.data_lake_bucket_name
+#   athena_output_prefix  = "athena_output/"
 
-}
+# }
 
 # module "glue" {
 #   source = "./modules/glue"

@@ -29,6 +29,9 @@ def process_aggtrades_data(
     )
 
     if table_exists(spark, transform_db, aggtrades_table):
+        logger.info(
+            f"Table {transform_db}.{aggtrades_table} exists. Overwriting data..."
+        )
         df.writeTo(f"{transform_db}.{aggtrades_table}").overwritePartitions()
         logger.info(
             f"Table {transform_db}.{aggtrades_table} overwritten for {symbol} on {landing_date}"
