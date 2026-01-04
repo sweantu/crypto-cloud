@@ -12,18 +12,17 @@ tf-apply:
 docker-build:
 	bash ./scripts/docker.sh
 docker-storage-up:
-	docker-compose -p crypto-storage -f infras/docker/docker-compose.storage.yml up -d
+	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml up -d
 docker-storage-down:
-	docker-compose -p crypto-storage -f infras/docker/docker-compose.storage.yml down
+	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml down
 docker-batch-up:
-	docker-compose -p crypto-batch -f infras/docker/docker-compose.batch.yml up -d
+	docker-compose -p crypto-cloud-batch -f infras/docker/docker-compose.batch.yml up -d
 docker-batch-down:
-	docker-compose -p crypto-batch -f infras/docker/docker-compose.batch.yml down
+	docker-compose -p crypto-cloud-batch -f infras/docker/docker-compose.batch.yml down
 docker-stream-up:
-	docker-compose -p crypto-stream -f infras/docker/docker-compose.stream.yml up -d
+	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml up -d
 docker-stream-down:
-	docker-compose -p crypto-stream -f infras/docker/docker-compose.stream.yml down
-
+	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml down
 ssh:
 	@ins="$(ins)"; \
 	[ -z "$$ins" ] && ins="clickhouse"; \

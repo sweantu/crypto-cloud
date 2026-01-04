@@ -63,7 +63,7 @@ services:
     container_name: crypto-cloud-flink-jobmanager
     command: jobmanager
     ports:
-      - "8081:8081"   # Flink Web UI
+      - "8091:8081"   # Flink Web UI
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
