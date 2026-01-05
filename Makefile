@@ -1,13 +1,35 @@
-TF_STATE=terraform/terraform.tfstate
 TERRAFORM_OUTPUT=terraform output -state=$(TF_STATE) -raw
 
+tf-init:
+	cd infras/terraform && terraform init
+
+tf-plan:
+	cd infras/terraform && terraform plan
+
+tf-apply:
+	cd infras/terraform && terraform apply -auto-approve
+
+docker-build:
+	bash ./scripts/docker.sh
+docker-storage-up:
+	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml up
+docker-storage-down:
+	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml down
+docker-batch-up:
+	docker-compose -p crypto-cloud-batch -f infras/docker/docker-compose.batch.yml up -d
+docker-batch-down:
+	docker-compose -p crypto-cloud-batch -f infras/docker/docker-compose.batch.yml down
+docker-stream-up:
+	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml up -d
+docker-stream-down:
+	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml down
 ssh:
 	@ins="$(ins)"; \
 	[ -z "$$ins" ] && ins="clickhouse"; \
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip
 
 log-ec2:
 	@ins="$(ins)"; \
@@ -15,7 +37,7 @@ log-ec2:
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
 
 log-ec2-docker:
 	@ins="$(ins)"; \
@@ -23,7 +45,7 @@ log-ec2-docker:
 	echo "ins=$$ins" ; \
 	instance_id="$$( $(TERRAFORM_OUTPUT) $${ins}_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	ssh -i ~/.ssh/$(KEY_NAME) ubuntu@$$instance_ip "sudo docker logs $$ins | tail -200"
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip "sudo docker logs $$ins | tail -200"
 
 stop-ec2:
 	@ins="$(ins)"; \
@@ -52,7 +74,7 @@ describe-ec2:
 sync-clickhouse:
 	@instance_id="$$( $(TERRAFORM_OUTPUT) clickhouse_instance_id )"; \
 	instance_ip="$$( aws ec2 describe-instances --instance-ids "$$instance_id" --query "Reservations[0].Instances[0].PublicIpAddress" --output text )"; \
-	rsync -avz -e "ssh -i ~/.ssh/$(KEY_NAME)" services/clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
+	rsync -avz -e "ssh -i ~/.ssh/$(SSH_KEY)" services/clickhouse/ ubuntu@$$instance_ip:/home/ubuntu/clickhouse/
 
 jupyter-convert:
 	@path="$(path)"; \
@@ -71,9 +93,17 @@ spark-submit:
 		--conf "spark.sql.shuffle.partitions=2" \
 		$$script
 
+build-glue-job-libs:
+	@rm -rf ./build/glue_job_libs; \
+	mkdir -p ./build/glue_job_libs; \
+	cp -R ./shared_lib/src/shared_lib ./build/glue_job_libs/shared_lib ; \
+	cp -R ./spark_jobs/common ./build/glue_job_libs/common ; \
+	cd ./build/glue_job_libs && zip -r extra.zip . ;\
+
 sync-glue-scripts:
 	@glue_scripts_bucket_name="$$($(TERRAFORM_OUTPUT) glue_scripts_bucket_name)"; \
-	aws s3 sync ./spark_jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete
+	aws s3 sync ./spark_jobs/jobs s3://$$glue_scripts_bucket_name --exclude "*" --include "*.py" --delete; \
+	aws s3 sync ./build/glue_job_libs s3://$$glue_scripts_bucket_name/build/glue_job_libs --exclude "*" --include "*.zip" --delete
 
 start-glue-job:
 	@job="$(job)"; \
@@ -107,8 +137,8 @@ get-glue-job-status:
 push-airflow-image:
 	@airflow_repo_url="$$($(TERRAFORM_OUTPUT) airflow_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f airflow/Dockerfile \
@@ -118,8 +148,8 @@ push-airflow-image:
 push-aggtrades-producer-image:
 	@aggtrades_producer_repo_url="$$($(TERRAFORM_OUTPUT) aggtrades_producer_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f producers/aggtrades/Dockerfile \
@@ -129,8 +159,8 @@ push-aggtrades-producer-image:
 push-aggtrades-consumer-image:
 	@aggtrades_consumer_repo_url="$$($(TERRAFORM_OUTPUT) aggtrades_consumer_repo_url)"; \
 	account_id="$$($(TERRAFORM_OUTPUT) account_id)"; \
-	aws ecr get-login-password --region $(REGION) | \
-	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(REGION).amazonaws.com ; \
+	aws ecr get-login-password --region $(AWS_REGION) | \
+	    docker login --username AWS --password-stdin $${account_id}.dkr.ecr.$(AWS_REGION).amazonaws.com ; \
 	docker buildx build \
 	  --platform linux/amd64 \
 	  -f consumers/aggtrades/Dockerfile \

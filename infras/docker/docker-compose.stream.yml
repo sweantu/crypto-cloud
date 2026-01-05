@@ -1,0 +1,99 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.8.4
+    container_name: crypto-cloud-kafka
+    ports:
+      - "9092:9092"    # internal (containers)
+      - "29092:29092"  # external (host)
+    environment:
+      # -------------------------------
+      # KRaft mode (REQUIRED)
+      # -------------------------------
+      CLUSTER_ID: p9Xz8u9yQmKxk0zG2vY0jw
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      # -------------------------------
+      # Listeners
+      # -------------------------------
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # -------------------------------
+      # Single-node safe defaults
+      # -------------------------------
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # -------------------------------
+      # QoL
+      # -------------------------------
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_RETENTION_HOURS: 24
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - crypto-cloud-network
+
+  # -------------------------------
+  # Kafka UI (KRaft – No Zookeeper)
+  # -------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: crypto-cloud-kafka-ui
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+    networks:
+      - crypto-cloud-network
+
+  flink-jobmanager:
+    build:
+      context: ./services/flink
+      dockerfile: Dockerfile
+    image: custom-flink:1.20.3
+    container_name: crypto-cloud-flink-jobmanager
+    command: jobmanager
+    ports:
+      - "8091:8081"   # Flink Web UI
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.port: 8081
+        parallelism.default: 2
+    networks:
+      - crypto-cloud-network
+
+  flink-taskmanager:
+    build:
+      context: ./services/flink
+      dockerfile: Dockerfile
+    image: custom-flink:1.20.3
+    container_name: crypto-cloud-flink-taskmanager
+    command: taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+    networks:
+      - crypto-cloud-network
+
+volumes:
+  kafka_data:
+
+networks:
+  crypto-cloud-network:
+    external: true
