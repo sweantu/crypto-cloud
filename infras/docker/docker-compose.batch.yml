@@ -1,0 +1,66 @@
+services:
+  spark-master:
+    build:
+      context: ./services/spark
+      dockerfile: Dockerfile
+    image: custom-spark:3.5.4-java17
+    container_name: crypto-cloud-spark-master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    networks:
+      - crypto-cloud-network
+    command: >
+      bash -c " /opt/spark/sbin/start-master.sh && tail -f /opt/spark/logs/*"
+
+  spark-worker:
+    build:
+      context: ./services/spark
+      dockerfile: Dockerfile
+    image: custom-spark:3.5.4-java17
+    container_name: crypto-cloud-spark-worker
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+    networks:
+      - crypto-cloud-network
+    command: >
+      bash -c " /opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /opt/spark/logs/*"
+
+  airflow:
+    build:
+      context: ./services/airflow
+      dockerfile: Dockerfile
+    image: custom-airflow:2.10.3-python3.11
+    container_name: crypto-cloud-airflow
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USERNAME}:${AIRFLOW_DB_PASSWORD}@postgres:5432/${AIRFLOW_DB_NAME}
+
+      AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME}
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+      AIRFLOW_ADMIN_EMAIL: ${AIRFLOW_ADMIN_EMAIL}
+
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    ports:
+      - "8082:8080"
+    networks:
+      - crypto-cloud-network
+    command: >
+      bash -c "
+      airflow db init &&
+      airflow users create --username ${AIRFLOW_ADMIN_USERNAME} --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Air --lastname Flow --role Admin --email ${AIRFLOW_ADMIN_EMAIL} || true &&
+      airflow webserver &
+      airflow scheduler
+      "
+    # volumes:
+    #   - ./airflow/dags:/opt/airflow/dags
+
+networks:
+  crypto-cloud-network:
+    external: true

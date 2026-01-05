@@ -1,7 +1,0 @@
-CREATE USER hive WITH PASSWORD 'hive';
-CREATE DATABASE metastore_db OWNER hive;
-GRANT ALL PRIVILEGES ON DATABASE metastore_db TO hive;
-
-CREATE USER airflow WITH PASSWORD 'airflow123';
-CREATE DATABASE airflow OWNER airflow;
-GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
