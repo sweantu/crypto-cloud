@@ -19,8 +19,8 @@ Sample dashboard screenshots:
 ## High-level data flow
 
 1. Producers publish market data into streaming systems.
-2. Flink jobs process streams and write to Iceberg tables.
-3. Spark/Glue jobs handle batch transformations.
+2. Flink jobs process streams and write to ClickHouse tables.
+3. Spark/Glue jobs handle batch transformations and write to Iceberg tables.
 4. ClickHouse serves curated datasets for analytics.
 
 ## Repository layout
