@@ -60,7 +60,7 @@ spark = (
 )
 
 if __name__ == "__main__":
-    from ingestion.batch.aggtrades.main import ingest_aggtrades
+    from ingestion.aggtrades.main import ingest_aggtrades
 
     ingest_aggtrades(
         spark,

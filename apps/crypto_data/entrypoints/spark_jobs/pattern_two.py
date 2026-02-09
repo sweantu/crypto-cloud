@@ -98,7 +98,7 @@ spark = (
 
 
 if __name__ == "__main__":
-    from transformation.batch.pattern_two.main import transform_pattern_two
+    from transformation.pattern_two.main import transform_pattern_two
 
     transform_db = f"hive_catalog.{TRANSFORM_DB}"
     transform_pattern_two(

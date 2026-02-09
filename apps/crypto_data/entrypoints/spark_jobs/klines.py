@@ -97,7 +97,7 @@ spark = (
 )
 
 if __name__ == "__main__":
-    from transformation.batch.klines.main import transform_klines
+    from transformation.klines.main import transform_klines
 
     transform_db = f"hive_catalog.{TRANSFORM_DB}"
     if not database_exists(spark, transform_db):
