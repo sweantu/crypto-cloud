@@ -1,8 +1,9 @@
 import argparse
 
+from common.spark import get_spark_session
+
 # import sys
 # from awsglue.utils import getResolvedOptions
-from pyspark.sql import SparkSession
 from shared_lib.minio import upload_to_minio
 
 # args = getResolvedOptions(
@@ -30,38 +31,11 @@ DATA_LAKE_BUCKET = args["data_lake_bucket"]
 ICEBERG_LOCK_TABLE = args["iceberg_lock_table"]
 
 
-spark = (
-    SparkSession.builder.appName("Landing Job")  # type: ignore
-    .master("local[*]")
-    .config("spark.sql.session.timeZone", "UTC")
-    # local mode optimizations to reduce memory consumption
-    .config("spark.sql.parquet.enableVectorizedReader", "false")
-    .config("spark.sql.columnVector.offheap.enabled", "false")
-    .config("spark.memory.offHeap.enabled", "false")
-    .config(
-        "spark.sql.catalog.glue_catalog.read.parquet.vectorization.enabled", "false"
-    )
-    .config("spark.driver.memory", "2g")
-    .config("spark.driver.extraJavaOptions", "-XX:MaxDirectMemorySize=1g")
-    .config("spark.sql.codegen.wholeStage", "false")
-    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4")
-    .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-    .config("spark.hadoop.fs.s3a.path.style.access", "true")
-    # minio specific configs
-    .config(
-        "spark.hadoop.fs.s3a.aws.credentials.provider",
-        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
-    )
-    .config("spark.hadoop.fs.s3a.access.key", "admin")
-    .config("spark.hadoop.fs.s3a.secret.key", "admin123")
-    .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000")
-    .getOrCreate()
-)
 
 if __name__ == "__main__":
     from ingestion.aggtrades.main import ingest_aggtrades
 
+    spark = get_spark_session("Aggtrades Ingestion Job")
     ingest_aggtrades(
         spark,
         symbol,
