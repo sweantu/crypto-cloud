@@ -1,8 +1,8 @@
 import logging
 
-from common.spark import table_exists
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
+from shared_lib.spark import table_exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

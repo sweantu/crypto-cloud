@@ -1,10 +1,9 @@
 import argparse
 
-from common.spark import get_spark_session
-
 # import sys
 # from awsglue.utils import getResolvedOptions
 from shared_lib.minio import upload_to_minio
+from shared_lib.spark import get_spark_session
 
 # args = getResolvedOptions(
 #     sys.argv,

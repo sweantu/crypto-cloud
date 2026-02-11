@@ -1,6 +1,6 @@
 from common.rsi import make_rsi_in_chunks
-from common.spark import table_exists
 from pyspark.sql import types
+from shared_lib.spark import table_exists
 
 
 def process_rsi_data(

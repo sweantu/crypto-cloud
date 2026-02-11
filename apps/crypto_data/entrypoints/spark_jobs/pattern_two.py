@@ -3,7 +3,7 @@ import logging
 
 # import sys
 # from awsglue.utils import getResolvedOptions
-from common.spark import get_spark_session
+from shared_lib.spark import get_spark_session
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

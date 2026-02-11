@@ -1,6 +1,6 @@
 from common.ema import make_ema_in_chunks
-from common.spark import table_exists
 from pyspark.sql import types
+from shared_lib.spark import table_exists
 
 
 def process_pattern_three_data(

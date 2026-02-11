@@ -1,9 +1,9 @@
 import logging
 
 from common.ema import make_ema_in_chunks
-from common.spark import table_exists
 from pyspark.sql import SparkSession, types
 from pyspark.sql import functions as F
+from shared_lib.spark import table_exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

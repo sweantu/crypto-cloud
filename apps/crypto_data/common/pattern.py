@@ -1,76 +1,3 @@
-def calc_ema(value, state):
-    if value is None:
-        return None
-    prev, buffer, period, k = (
-        state["prev"],
-        state["buffer"],
-        state["period"],
-        state["k"],
-    )
-    if prev is None:
-        buffer.append(value)
-        if len(buffer) == period:
-            ema = sum(buffer) / len(buffer)
-            buffer.clear()
-        else:
-            ema = None
-    else:
-        ema = (value - prev) * k + prev
-
-    state["prev"] = ema
-    return ema
-
-
-def calc_rsi(diff, state):
-    """
-    Wilder RSI calculation (EMA-style state)
-    """
-    if diff is None:
-        return None
-
-    period = state["period"]
-    buffer = state["buffer"]
-    ag = state["ag"]
-    al = state["al"]
-    initialized = state["initialized"]
-
-    if not initialized:
-        buffer.append(diff)
-
-        if len(buffer) < period:
-            return None
-
-        ag = sum(d for d in buffer if d > 0) / period
-        al = sum(-d for d in buffer if d < 0) / period
-        state["initialized"] = True
-    else:
-        ag = ((ag * (period - 1)) + (diff if diff > 0 else 0.0)) / period
-        al = ((al * (period - 1)) + (-diff if diff < 0 else 0.0)) / period
-
-    state["ag"] = ag
-    state["al"] = al
-
-    if al == 0:
-        rsi = 100.0
-    elif ag == 0:
-        rsi = 0.0
-    else:
-        rs = ag / al
-        rsi = 100.0 - (100.0 / (1.0 + rs))
-
-    return rsi
-
-
-def detect_trend(ema7, ema20):
-    if ema7 is None or ema20 is None:
-        return None
-    if ema7 > ema20:
-        return "uptrend"
-    elif ema7 < ema20:
-        return "downtrend"
-    return None
-
-
 def detect_pattern_one(current, trend):
     if not current or not trend:
         return None
@@ -185,3 +112,19 @@ def detect_pattern_three(c1, c2, c3, trend):
         return "evening doji star"
 
     return None
+
+
+class PatternEngine:
+    def detect(self, c1, c2, c3, trend):
+        """
+        Priority:
+        1. Three-candle patterns
+        2. Two-candle patterns
+        3. One-candle patterns
+        """
+
+        return (
+            detect_pattern_three(c1, c2, c3, trend)
+            or detect_pattern_two(c3, c2, trend)
+            or detect_pattern_one(c3, trend)
+        )

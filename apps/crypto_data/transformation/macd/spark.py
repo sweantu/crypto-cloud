@@ -1,8 +1,8 @@
 import logging
 
 from common.macd import make_macd_in_chunks
-from common.spark import table_exists
 from pyspark.sql import types
+from shared_lib.spark import table_exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

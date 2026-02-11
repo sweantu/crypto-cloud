@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from common.spark import get_spark_session
+from shared_lib.spark import get_spark_session
 
 # import sys
 # from awsglue.utils import getResolvedOptions

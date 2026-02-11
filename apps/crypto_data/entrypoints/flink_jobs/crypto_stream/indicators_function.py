@@ -1,11 +1,12 @@
 import pickle
 
+from common.ema import EmaEngine, detect_trend
+from common.pattern import PatternEngine
+from common.rsi import RsiEngine
 from pyflink.common import Row
 from pyflink.common.typeinfo import Types
 from pyflink.datastream.functions import KeyedProcessFunction
 from pyflink.datastream.state import ValueStateDescriptor
-from shared_lib.engines import EmaEngine, PatternEngine, RsiEngine
-from shared_lib.indicators import detect_trend
 
 
 class IndicatorsFunction(KeyedProcessFunction):
