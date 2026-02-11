@@ -1,14 +1,29 @@
 import os
 from datetime import datetime, timedelta
 
+from airflow import DAG
+from airflow.exceptions import AirflowFailException
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 
-from airflow import DAG
+LANDING_JOB = os.getenv("GLUE_LANDING_JOB", "crypto_landing_job")
+TRANSFORM_JOB = os.getenv("GLUE_TRANSFORM_JOB", "crypto_transform_job")
+TRANSFORM_JOB_PATTERN_TWO = os.getenv(
+    "GLUE_TRANSFORM_JOB_PATTERN_TWO", "crypto_transform_job_pattern_two"
+)
 
-LANDING_JOB = os.environ["GLUE_LANDING_JOB"]
-TRANSFORM_JOB = os.environ["GLUE_TRANSFORM_JOB"]
-TRANSFORM_JOB_PATTERN_TWO = os.environ["GLUE_TRANSFORM_JOB_PATTERN_TWO"]
+
+def validate_env():
+    required = [
+        "GLUE_LANDING_JOB",
+        "GLUE_TRANSFORM_JOB",
+        "GLUE_TRANSFORM_JOB_PATTERN_TWO",
+    ]
+    for key in required:
+        if not os.getenv(key):
+            raise AirflowFailException(f"Missing env var: {key}")
+
 
 # Default DAG args
 default_args = {
@@ -18,13 +33,12 @@ default_args = {
 }
 
 with DAG(
-    dag_id="etl_dag_glue",
+    dag_id="glue",
     default_args=default_args,
     description="ETL DAG using AWS Glue Job",
     schedule_interval="0 0 * * *",
-    start_date=datetime(2025, 9, 27),
-    end_date=datetime(2025, 9, 27),
-    catchup=True,  # enable backfill
+    start_date=datetime(2025, 9, 24),
+    catchup=False,  # enable backfill
     max_active_runs=1,
     params={
         "symbol": "ADAUSDT",
@@ -32,6 +46,11 @@ with DAG(
     tags=["glue", "etl"],
 ) as dag:
     start = EmptyOperator(task_id="start")
+
+    validate = PythonOperator(
+        task_id="validate_env",
+        python_callable=validate_env,
+    )
 
     landing_job = GlueJobOperator(
         task_id="landing_glue_job",
@@ -74,4 +93,11 @@ with DAG(
 
     end = EmptyOperator(task_id="end")
 
-    start >> landing_job >> transform_job >> transform_job_pattern_two >> end
+    (
+        start
+        >> validate
+        >> landing_job
+        >> transform_job
+        >> transform_job_pattern_two
+        >> end
+    )

@@ -20,7 +20,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--symbol", required=True)
 parser.add_argument("--landing_date", required=True)
 parser.add_argument("--data_lake_bucket", required=True)
-parser.add_argument("--iceberg_lock_table", required=True)
 args = parser.parse_args().__dict__
 
 
@@ -28,9 +27,6 @@ symbol = args["symbol"]
 landing_date = args["landing_date"]
 
 DATA_LAKE_BUCKET = args["data_lake_bucket"]
-ICEBERG_LOCK_TABLE = args["iceberg_lock_table"]
-
-
 
 if __name__ == "__main__":
     from ingestion.aggtrades.main import ingest_aggtrades
