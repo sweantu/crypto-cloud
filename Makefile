@@ -11,10 +11,14 @@ tf-apply:
 
 docker-build:
 	bash ./scripts/docker.sh
-docker-storage-up:
-	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml up -d --remove-orphans
-docker-storage-down:
-	docker-compose -p crypto-cloud-storage -f infras/docker/docker-compose.storage.yml down
+docker-batch-storage-up:
+	docker-compose -p crypto-cloud-batch-storage -f infras/docker/docker-compose.batch-storage.yml up -d --remove-orphans
+docker-batch-storage-down:
+	docker-compose -p crypto-cloud-batch-storage -f infras/docker/docker-compose.batch-storage.yml down
+docker-stream-storage-up:
+	docker-compose -p crypto-cloud-stream-storage -f infras/docker/docker-compose.stream-storage.yml up -d --remove-orphans
+docker-stream-storage-down:
+	docker-compose -p crypto-cloud-stream-storage -f infras/docker/docker-compose.stream-storage.yml down
 docker-batch-up:
 	docker-compose -p crypto-cloud-batch -f infras/docker/docker-compose.batch.yml up -d
 docker-batch-down:

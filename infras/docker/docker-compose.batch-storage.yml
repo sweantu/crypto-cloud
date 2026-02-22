@@ -13,7 +13,7 @@ services:
       - minio_data:/data
     networks:
       - crypto-cloud-network
-  
+
   postgres:
     build:
       context: ./services/postgres
@@ -65,26 +65,10 @@ services:
     networks:
       - crypto-cloud-network
 
-  # clickhouse:
-  #   image: clickhouse/clickhouse-server:25.8
-  #   container_name: crypto-cloud-clickhouse
-  #   environment:
-  #     CLICKHOUSE_DB: ${CLICKHOUSE_DB}
-  #     CLICKHOUSE_USER: ${CLICKHOUSE_USER}
-  #     CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-  #   ports:
-  #     - "8123:8123"
-  #     - "9100:9000"
-  #   volumes:
-  #     - clickhouse_data:/var/lib/clickhouse
-  #   networks:
-  #     - crypto-cloud-network
-
-
 volumes:
   minio_data:
   postgres_data:
-  clickhouse_data:
+
 
 networks:
   crypto-cloud-network:

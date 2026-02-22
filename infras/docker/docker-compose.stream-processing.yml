@@ -1,0 +1,37 @@
+services:
+  flink-jobmanager:
+    build:
+      context: ./services/flink
+      dockerfile: Dockerfile
+    image: custom-flink:1.20.3
+    container_name: crypto-cloud-flink-jobmanager
+    command: jobmanager
+    ports:
+      - "8091:8081" # Flink Web UI
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.port: 8081
+        parallelism.default: 2
+    networks:
+      - crypto-cloud-network
+
+  flink-taskmanager:
+    build:
+      context: ./services/flink
+      dockerfile: Dockerfile
+    image: custom-flink:1.20.3
+    container_name: crypto-cloud-flink-taskmanager
+    command: taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+    networks:
+      - crypto-cloud-network
+
+networks:
+  crypto-cloud-network:
+    external: true

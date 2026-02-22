@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 import requests
+from shared_lib.file import make_dir
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -156,8 +157,7 @@ def lambda_handler(event, context):
 
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
-    if not os.path.exists(extract_dir):
-        os.makedirs(extract_dir)
+    make_dir(extract_dir)
     urls = [
         f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
         for symbol in symbols

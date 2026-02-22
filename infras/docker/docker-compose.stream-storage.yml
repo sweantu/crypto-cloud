@@ -1,10 +1,25 @@
 services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: crypto-cloud-clickhouse
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    ports:
+      - "8123:8123"
+      - "9100:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - crypto-cloud-network
+
   kafka:
     image: confluentinc/cp-kafka:7.8.4
     container_name: crypto-cloud-kafka
     ports:
-      - "9092:9092"    # internal (containers)
-      - "29092:29092"  # external (host)
+      - "9092:9092" # internal (containers)
+      - "29092:29092" # external (host)
     environment:
       # -------------------------------
       # KRaft mode (REQUIRED)
@@ -58,41 +73,10 @@ services:
     networks:
       - crypto-cloud-network
 
-  flink-jobmanager:
-    build:
-      context: ./services/flink
-      dockerfile: Dockerfile
-    image: custom-flink:1.20.3
-    container_name: crypto-cloud-flink-jobmanager
-    command: jobmanager
-    ports:
-      - "8091:8081"   # Flink Web UI
-    environment:
-      FLINK_PROPERTIES: |
-        jobmanager.rpc.address: flink-jobmanager
-        rest.port: 8081
-        parallelism.default: 2
-    networks:
-      - crypto-cloud-network
-
-  flink-taskmanager:
-    build:
-      context: ./services/flink
-      dockerfile: Dockerfile
-    image: custom-flink:1.20.3
-    container_name: crypto-cloud-flink-taskmanager
-    command: taskmanager
-    depends_on:
-      - flink-jobmanager
-    environment:
-      FLINK_PROPERTIES: |
-        jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 4
-    networks:
-      - crypto-cloud-network
-
 volumes:
+  clickhouse_data:
   kafka_data:
+
 
 networks:
   crypto-cloud-network:

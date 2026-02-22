@@ -1,7 +1,7 @@
 import logging
 import os
 
-from shared_lib.file import download_file, extract_file, remove_file
+from shared_lib.file import download_file, extract_file, make_dir, remove_file
 
 from .spark import process_aggtrades_data
 
@@ -12,11 +12,13 @@ logger = logging.getLogger(__name__)
 def ingest_aggtrades(spark, symbol, landing_date, data_lake_bucket, upload_file):
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
+    make_dir(extract_dir)
     url = f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
     zip_path = os.path.join(script_dir, url.split("/")[-1])
+    csv_path = os.path.join(extract_dir, f"{symbol}-aggTrades-{landing_date}.csv")
 
     download_file(url, zip_path)
-    csv_path = extract_file(extract_dir, zip_path)
+    extract_file(extract_dir, zip_path)
 
     s3_key = f"raw_zone/{os.path.basename(csv_path)}"
     read_url = upload_file(data_lake_bucket, csv_path, s3_key)

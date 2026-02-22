@@ -8,13 +8,14 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def make_dir(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
 def download_file(url, file_path) -> str:
     if os.path.exists(file_path):
         logger.info(f"{file_path} exists")
         return file_path
-    if not os.path.exists(os.path.dirname(file_path)):
-        os.makedirs(os.path.dirname(file_path))
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         logger.info(f"Downloading {url} -> {file_path}")
@@ -36,17 +37,13 @@ def remove_file(file_path):
         logger.info(f"{file_path} removed")
 
 
-def extract_file(extract_dir, zip_path) -> str:
+def extract_file(extract_dir, zip_path) -> None:
     if not os.path.exists(zip_path):
         logger.info(f"{zip_path} not found")
         raise FileNotFoundError(f"{zip_path} not found")
-    if not os.path.exists(extract_dir):
-        os.makedirs(extract_dir)
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         logger.info(f"Extracting {zip_path} -> {extract_dir}")
         start_t = time.time()
         zip_ref.extractall(extract_dir)
         end_t = time.time()
-        file_path = os.path.join(extract_dir, os.listdir(extract_dir)[0])
-        logger.info(f"Extracted CSV: {file_path} in {(end_t - start_t):.3f} seconds")
-        return file_path
+        logger.info(f"Extracted {zip_path} in {(end_t - start_t):.3f} seconds")
