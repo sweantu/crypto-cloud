@@ -33,6 +33,13 @@
             <artifactId>flink-sql-connector-clickhouse</artifactId>
             <version>1.17.1-8</version>
         </dependency>
+
+        <!-- Kafka Sink Connector -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>3.3.0-1.20</version>
+        </dependency>
     </dependencies>
 
     <build>

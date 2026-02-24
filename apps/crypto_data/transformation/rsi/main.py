@@ -1,6 +1,6 @@
 import logging
 
-from transformation.rsi.spark import process_rsi_data
+from .spark import process_rsi_data
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
