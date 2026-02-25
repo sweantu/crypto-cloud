@@ -1,11 +1,11 @@
-def detect_pattern_one(current, trend):
-    if not current or not trend:
+def detect_pattern_one(curr, trend):
+    if not curr or not trend:
         return None
 
-    op = current["open_price"]
-    cp = current["close_price"]
-    hp = current["high_price"]
-    lp = current["low_price"]
+    op = curr["open_price"]
+    cp = curr["close_price"]
+    hp = curr["high_price"]
+    lp = curr["low_price"]
 
     body = abs(cp - op)
     if body == 0:
@@ -23,11 +23,11 @@ def detect_pattern_one(current, trend):
     return None
 
 
-def detect_pattern_two(current, previous, trend):
-    if not previous or not trend:
+def detect_pattern_two(curr, prev, trend):
+    if not prev or not trend:
         return None
-    op_prev, cp_prev = previous["open_price"], previous["close_price"]
-    op, cp = current["open_price"], current["close_price"]
+    op_prev, cp_prev = prev["open_price"], prev["close_price"]
+    op, cp = curr["open_price"], curr["close_price"]
 
     if (
         cp_prev < op_prev
@@ -114,17 +114,16 @@ def detect_pattern_three(c1, c2, c3, trend):
     return None
 
 
-class PatternEngine:
-    def detect(self, c1, c2, c3, trend):
-        """
-        Priority:
-        1. Three-candle patterns
-        2. Two-candle patterns
-        3. One-candle patterns
-        """
+def detectPattern(c1, c2, c3, trend):
+    """
+    Priority:
+    1. Three-kline patterns
+    2. Two-kline patterns
+    3. One-kline patterns
+    """
 
-        return (
-            detect_pattern_three(c1, c2, c3, trend)
-            or detect_pattern_two(c3, c2, trend)
-            or detect_pattern_one(c3, trend)
-        )
+    return (
+        detect_pattern_three(c1, c2, c3, trend)
+        or detect_pattern_two(c3, c2, trend)
+        or detect_pattern_one(c3, trend)
+    )

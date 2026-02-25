@@ -10,9 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def _minio_client():
-    """
-    Create an S3-compatible client for MinIO using env vars.
-    """
     return boto3.client(
         "s3",
         endpoint_url=os.getenv("MINIO_ENDPOINT", "http://localhost:9000"),
@@ -22,13 +19,7 @@ def _minio_client():
     )
 
 
-def upload_to_minio(bucket: str, local_path: str | Path, object_key: str) -> str:
-    """
-    Upload a local file to MinIO.
-
-    Returns:
-        s3://bucket/object_key
-    """
+def upload_to_minio(bucket: str, local_path: str | Path, key: str) -> str:
     local_path = Path(local_path)
 
     if not local_path.exists():
@@ -40,12 +31,12 @@ def upload_to_minio(bucket: str, local_path: str | Path, object_key: str) -> str
         s3.upload_file(
             Filename=str(local_path),
             Bucket=bucket,
-            Key=object_key,
+            Key=key,
         )
     except (BotoCoreError, ClientError):
         logger.exception("Failed to upload file to MinIO")
         raise
 
-    url = f"s3://{bucket}/{object_key}"
+    url = f"s3://{bucket}/{key}"
     logger.info("Uploaded to MinIO: %s", url)
     return url
