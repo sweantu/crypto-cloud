@@ -1,10 +1,16 @@
 import json
 import os
 
-from pyflink.datastream import (
-    StreamExecutionEnvironment,
-)
+from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.table import EnvironmentSettings, StreamTableEnvironment
+
+
+def get_table_environment(parallelism: int = 1) -> StreamTableEnvironment:
+    env = StreamExecutionEnvironment.get_execution_environment()
+    env.set_parallelism(parallelism)
+    settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
+    t_env = StreamTableEnvironment.create(env, environment_settings=settings)
+    return t_env
 
 
 def get_application_properties(path):
@@ -23,13 +29,6 @@ def property_map(props, property_group_id) -> dict[str, str]:
             return prop["PropertyMap"]
     raise ValueError(f"Property group {property_group_id} not found in properties")
 
-
-def get_table_environment(parallelism: int = 1) -> StreamTableEnvironment:
-    env = StreamExecutionEnvironment.get_execution_environment()
-    env.set_parallelism(parallelism)
-    settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
-    t_env = StreamTableEnvironment.create(env, environment_settings=settings)
-    return t_env
 
 def get_kafka_source_config(prop_map: dict[str, str]) -> str:
     return f"""(

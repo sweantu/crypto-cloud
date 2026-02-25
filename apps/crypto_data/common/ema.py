@@ -5,6 +5,37 @@ from shared_lib.number import round_half_up
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+class Ema:
+    def __init__(self, period: int, prev: float | None = None):
+        self.prev = prev
+        self.buffer = []
+        self.period = period
+        self.k = 2 / (period + 1)
+
+    def calculate(self, curr: float) -> float | None:
+        if self.prev is None:
+            self.buffer.append(curr)
+            if len(self.buffer) == self.period:
+                ema = sum(self.buffer) / len(self.buffer)
+                self.buffer.clear()
+            else:
+                ema = None
+        else:
+            ema = (curr - self.prev) * self.k + self.prev
+
+        self.prev = ema
+        return ema
+
+
+def detect_trend(ema7, ema20):
+    if ema7 is None or ema20 is None:
+        return None
+    if ema7 > ema20:
+        return "uptrend"
+    elif ema7 < ema20:
+        return "downtrend"
+    return None
+
 
 def make_ema_in_chunks(prev_ema7, prev_ema20):
     def ema_in_chunks(iterator):
@@ -28,35 +59,3 @@ def make_ema_in_chunks(prev_ema7, prev_ema20):
 
     logger.info(f"Using previous EMA values: ema7={prev_ema7}, ema20={prev_ema20}")
     return ema_in_chunks
-
-
-def detect_trend(ema7, ema20):
-    if ema7 is None or ema20 is None:
-        return None
-    if ema7 > ema20:
-        return "uptrend"
-    elif ema7 < ema20:
-        return "downtrend"
-    return None
-
-
-class Ema:
-    def __init__(self, period: int, prev: float | None = None):
-        self.prev = prev
-        self.buffer = []
-        self.period = period
-        self.k = 2 / (period + 1)
-
-    def calculate(self, curr: float) -> float | None:
-        if self.prev is None:
-            self.buffer.append(curr)
-            if len(self.buffer) == self.period:
-                ema = sum(self.buffer) / len(self.buffer)
-                self.buffer.clear()
-            else:
-                ema = None
-        else:
-            ema = (curr - self.prev) * self.k + self.prev
-
-        self.prev = ema
-        return ema

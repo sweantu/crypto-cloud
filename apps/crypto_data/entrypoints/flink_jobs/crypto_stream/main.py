@@ -5,7 +5,7 @@ from shared_lib.flink import (
     get_application_properties,
     get_table_environment,
 )
-from transformation.crypto_stream.main import transform
+from transformation.crypto_stream.main import run
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     props = get_application_properties(APPLICATION_PROPERTIES_FILE_PATH)
 
-    statement_set = transform(t_env, props)
+    statement_set = run(t_env, props)
     if is_local:
         statement_set.execute().wait()  # block only locally
     else:

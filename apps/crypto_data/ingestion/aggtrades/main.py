@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def ingest_aggtrades(spark, symbol, landing_date, data_lake_bucket, upload_file):
+def run(spark, symbol, landing_date, data_lake_bucket, upload_file):
     script_dir = "/tmp/data/raw"
     extract_dir = os.path.join(script_dir, "unzipped_data")
     make_dir(extract_dir)

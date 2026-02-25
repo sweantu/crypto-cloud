@@ -82,6 +82,6 @@ def process_klines_data(
         df_kline.writeTo(f"{transform_db}.{klines_table}").tableProperty(
             "format-version", "2"
         ).partitionedBy(F.col("symbol"), F.col("landing_date")).createOrReplace()
-    logger.info(
-        f"Table {transform_db}.{klines_table} created for {symbol} on {landing_date}"
-    )
+        logger.info(
+            f"Table {transform_db}.{klines_table} created for {symbol} on {landing_date}"
+        )

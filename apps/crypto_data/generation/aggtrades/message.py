@@ -3,7 +3,7 @@ import json
 
 class AggTrade:
     @staticmethod
-    def get_message(row: list[str], symbol: str) -> dict[str, str]:
+    def create_message(row: list[str], symbol: str) -> dict[str, str]:
         agg_trade = {
             "agg_trade_id": int(row[0]),
             "price": float(row[1]),

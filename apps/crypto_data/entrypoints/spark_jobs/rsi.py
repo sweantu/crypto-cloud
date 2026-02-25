@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    from transformation.rsi.main import transform_rsi
+    from transformation.rsi.main import run
 
     args = get_args(
         [
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     spark = get_spark_session(app_name="rsi_transform_job", iceberg=True)
     transform_db = f"hive_catalog.{transform_db}"
-    transform_rsi(
+    run(
         spark,
         transform_db,
         symbol,

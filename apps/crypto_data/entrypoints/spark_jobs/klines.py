@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    from transformation.klines.main import transform_klines
+    from transformation.klines.main import run
 
     args = get_args(
         [
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     spark = get_spark_session(app_name="klines_transform_job", iceberg=True)
     transform_db = f"hive_catalog.{transform_db}"
-    transform_klines(
+    run(
         spark,
         symbol,
         landing_date,

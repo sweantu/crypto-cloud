@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def transform_pattern_two(spark, symbol, landing_date, transform_db):
+def run(spark, symbol, landing_date, transform_db):
     klines_table = "klines"
     pattern_two_table = "pattern_two"
 

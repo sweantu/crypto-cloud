@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Detect shell and script path correctly
+
 if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
   SCRIPT_PATH="${BASH_SOURCE[0]}"
 elif [[ -n "${ZSH_VERSION:-}" ]]; then

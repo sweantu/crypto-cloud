@@ -1,2 +1,2 @@
-def consume_aggtrades_messages(consumer, topic):
+def run(consumer, topic):
     consumer.consume_messages(topic=topic)

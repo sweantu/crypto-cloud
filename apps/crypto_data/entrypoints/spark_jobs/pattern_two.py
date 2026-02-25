@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    from transformation.pattern_two.main import transform_pattern_two
+    from transformation.pattern_two.main import run
 
     args = get_args(
         [
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     spark = get_spark_session(app_name="pattern_two_transform_job", iceberg=True)
     transform_db = f"hive_catalog.{transform_db}"
-    transform_pattern_two(
+    run(
         spark=spark,
         symbol=symbol,
         landing_date=landing_date,

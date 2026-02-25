@@ -8,7 +8,7 @@ from shared_lib.kinesis import KinesisClient
 REGION = os.getenv("AWS_REGION")
 
 if __name__ == "__main__":
-    from generation.aggtrades.main import produce_aggtrades_messages
+    from generation.aggtrades.main import run
 
     args = get_args(["symbols", "landing_dates"])
     symbols = json.loads(args["symbols"])
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     # kafka producer
     topic = "aggtrades-topic"
     kafka_producer = KafkaProducer({"bootstrap.servers": "localhost:29092"})
-    produce_aggtrades_messages(symbols, landing_dates, kafka_producer, topic)
+    run(symbols, landing_dates, kafka_producer, topic)

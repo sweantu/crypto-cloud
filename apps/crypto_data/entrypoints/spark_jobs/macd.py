@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    from transformation.macd.main import transform_macd
+    from transformation.macd.main import run
 
     args = get_args(
         [
@@ -28,5 +28,5 @@ if __name__ == "__main__":
 
     spark = get_spark_session(app_name="macd_transform_job", iceberg=True)
     transform_db = f"hive_catalog.{transform_db}"
-    transform_macd(spark, transform_db, symbol, landing_date)
+    run(spark, transform_db, symbol, landing_date)
     logger.info("✅ MACD transform job completed successfully.")

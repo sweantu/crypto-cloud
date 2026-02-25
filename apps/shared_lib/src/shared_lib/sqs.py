@@ -11,16 +11,6 @@ class SQSClient:
     def __init__(self, region: str):
         self.sqs_client = boto3.client("sqs", region_name=region)
 
-    def delivery_report(self, err, res):
-        if err is not None:
-            logger.info(f"❌ Delivery failed: {err}")
-        else:
-            succeeded_count = len(res.get("Successful", []))
-            failed_count = len(res.get("Failed", []))
-            logger.info(
-                f"✅ Delivered {succeeded_count} records, {failed_count} failed records"
-            )
-
     def produce_messages(self, queue_url, messages: list[dict[str, str]]):
         if not messages:
             logger.info("No records to send")
@@ -49,7 +39,7 @@ class SQSClient:
                     QueueUrl=queue_url,
                     MaxNumberOfMessages=max_messages,
                     WaitTimeSeconds=20,
-                    VisibilityTimeout=60,  # 60 seconds
+                    VisibilityTimeout=60,
                 )
 
                 messages = resp.get("Messages", [])
@@ -80,6 +70,16 @@ class SQSClient:
                     logger.info(
                         f"❌ Failed to delete {len(resp.get('Failed', []))} messages"
                     )
-                time.sleep(1)  # Throttle for a while
+                time.sleep(1)
         except KeyboardInterrupt:
             logger.info("\n👋 Stopped listening for messages.")
+
+    def delivery_report(self, err, res):
+        if err is not None:
+            logger.info(f"❌ Delivery failed: {err}")
+        else:
+            succeeded_count = len(res.get("Successful", []))
+            failed_count = len(res.get("Failed", []))
+            logger.info(
+                f"✅ Delivered {succeeded_count} records, {failed_count} failed records"
+            )

@@ -2,21 +2,6 @@ from pyspark.errors.exceptions.base import AnalysisException
 from pyspark.sql import SparkSession
 
 
-def table_exists(spark: SparkSession, database: str, table: str) -> bool:
-    try:
-        spark.catalog.getTable(f"{database}.{table}")
-        return True
-    except AnalysisException:
-        return False
-
-def database_exists(spark: SparkSession, database: str) -> bool:
-    try:
-        spark.catalog.getDatabase(database)
-        return True
-    except AnalysisException:
-        return False
-
-
 def get_glue_session(app_name: str, iceberg_lock_table: str) -> SparkSession:
     spark = SparkSession.builder.appName(app_name).config(  # type: ignore
         "spark.sql.session.timeZone", "UTC"
@@ -98,3 +83,19 @@ def get_spark_session(app_name: str, iceberg: bool = False) -> SparkSession:
         )
 
     return spark.getOrCreate()
+
+
+def table_exists(spark: SparkSession, database: str, table: str) -> bool:
+    try:
+        spark.catalog.getTable(f"{database}.{table}")
+        return True
+    except AnalysisException:
+        return False
+
+
+def database_exists(spark: SparkSession, database: str) -> bool:
+    try:
+        spark.catalog.getDatabase(database)
+        return True
+    except AnalysisException:
+        return False

@@ -15,7 +15,7 @@ from .indicators import (
 from .klines import create_klines_sink, create_klines_view, insert_klines
 
 
-def transform(t_env, props):
+def run(t_env, props):
     # create sources and sinks
     kas_groupid = "kafka_aggtrades_source"
     kas_props = property_map(props, kas_groupid)

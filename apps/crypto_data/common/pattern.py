@@ -1,3 +1,18 @@
+def detectPattern(c1, c2, c3, trend):
+    """
+    Priority:
+    1. Three-kline patterns
+    2. Two-kline patterns
+    3. One-kline patterns
+    """
+
+    return (
+        detect_pattern_three(c1, c2, c3, trend)
+        or detect_pattern_two(c3, c2, trend)
+        or detect_pattern_one(c3, trend)
+    )
+
+
 def detect_pattern_one(curr, trend):
     if not curr or not trend:
         return None
@@ -112,18 +127,3 @@ def detect_pattern_three(c1, c2, c3, trend):
         return "evening doji star"
 
     return None
-
-
-def detectPattern(c1, c2, c3, trend):
-    """
-    Priority:
-    1. Three-kline patterns
-    2. Two-kline patterns
-    3. One-kline patterns
-    """
-
-    return (
-        detect_pattern_three(c1, c2, c3, trend)
-        or detect_pattern_two(c3, c2, trend)
-        or detect_pattern_one(c3, trend)
-    )

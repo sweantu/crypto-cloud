@@ -17,41 +17,7 @@ REGION = os.getenv("AWS_REGION")
 DURATION = 60 * 1  # seconds
 MAX_MESSAGES = 500
 
-
-def produce_messages(
-    symbol: str, landing_date: str, csv_path: str, producer, topic: str
-) -> None:
-    num_lines = int(subprocess.check_output(["wc", "-l", csv_path]).split()[0])
-    logger.info(f"Processing file: {csv_path}, total lines: {num_lines}")
-    number_of_records = min(MAX_MESSAGES, int(num_lines / DURATION))
-    with open(csv_path, newline="", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        messages = []
-        for i, row in enumerate(reader, 1):
-            try:
-                msg = AggTrade.get_message(row, symbol)
-                messages.append(msg)
-                if i % number_of_records == 0 or i == num_lines:
-                    producer.produce_messages(topic, messages)
-                    logger.info(
-                        f"Produced messages for {symbol} at landing_date: {landing_date}, lines: {i}/{num_lines}"
-                    )
-                    messages = []
-                    time.sleep(1)
-            except Exception as e:
-                logger.info(f"❌ Exception while producing message: {i}, error: {e}")
-
-
-def download_and_extract_file(
-    symbol: str, landing_date: str, script_dir: str, extract_dir: str
-):
-    url = f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
-    zip_path = os.path.join(script_dir, url.split("/")[-1])
-    download_file(url, zip_path)
-    extract_file(extract_dir, zip_path)
-
-
-def produce_aggtrades_messages(symbols, landing_dates, producer, topic):
+def run(symbols, landing_dates, producer, topic):
     logger.info(
         f"Starting message production for symbols: {symbols} and landing_dates: {landing_dates}"
     )
@@ -116,3 +82,36 @@ def produce_aggtrades_messages(symbols, landing_dates, producer, topic):
     for path in zip_paths + csv_paths:
         remove_file(path)
     logger.info("✅ All rounds completed.")
+
+
+def download_and_extract_file(
+    symbol: str, landing_date: str, script_dir: str, extract_dir: str
+):
+    url = f"https://data.binance.vision/data/spot/daily/aggTrades/{symbol}/{symbol}-aggTrades-{landing_date}.zip"
+    zip_path = os.path.join(script_dir, url.split("/")[-1])
+    download_file(url, zip_path)
+    extract_file(extract_dir, zip_path)
+
+
+def produce_messages(
+    symbol: str, landing_date: str, csv_path: str, producer, topic: str
+) -> None:
+    num_lines = int(subprocess.check_output(["wc", "-l", csv_path]).split()[0])
+    logger.info(f"Processing file: {csv_path}, total lines: {num_lines}")
+    number_of_records = min(MAX_MESSAGES, int(num_lines / DURATION))
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        messages = []
+        for i, row in enumerate(reader, 1):
+            try:
+                msg = AggTrade.create_message(row, symbol)
+                messages.append(msg)
+                if i % number_of_records == 0 or i == num_lines:
+                    producer.produce_messages(topic, messages)
+                    logger.info(
+                        f"Produced messages for {symbol} at landing_date: {landing_date}, lines: {i}/{num_lines}"
+                    )
+                    messages = []
+                    time.sleep(1)
+            except Exception as e:
+                logger.info(f"❌ Exception while producing message: {i}, error: {e}")

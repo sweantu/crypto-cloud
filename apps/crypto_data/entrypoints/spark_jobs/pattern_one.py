@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    from transformation.pattern_one.main import transform_pattern_one
+    from transformation.pattern_one.main import run
 
     args = get_args(
         [
@@ -30,5 +30,5 @@ if __name__ == "__main__":
     spark = get_spark_session(app_name="pattern_one_transform_job", iceberg=True)
 
     transform_db = f"hive_catalog.{transform_db}"
-    transform_pattern_one(spark, transform_db, symbol, landing_date)
+    run(spark, transform_db, symbol, landing_date)
     logger.info("✅Transform job completed successfully.")

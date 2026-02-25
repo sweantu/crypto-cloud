@@ -1,6 +1,6 @@
 import os
 
-from serving.aggtrades.main import consume_aggtrades_messages
+from serving.aggtrades.main import run
 from shared_lib.kafka import KafkaConsumer
 from shared_lib.kinesis import KinesisClient
 from shared_lib.sqs import SQSClient
@@ -22,4 +22,4 @@ if __name__ == "__main__":
     kinesis_consumer = KinesisClient(region=REGION)
     sqs_consumer = SQSClient(region=REGION)
 
-    consume_aggtrades_messages(kafka_consumer, topic)
+    run(kafka_consumer, topic)

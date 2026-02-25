@@ -3,7 +3,7 @@ from shared_lib.minio import upload_to_minio
 from shared_lib.spark import get_spark_session
 
 if __name__ == "__main__":
-    from ingestion.aggtrades.main import ingest_aggtrades
+    from ingestion.aggtrades.main import run
 
     args = get_args(["symbol", "landing_date", "data_lake_bucket"])
     symbol = args["symbol"]
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     data_lake_bucket = args["data_lake_bucket"]
 
     spark = get_spark_session("Aggtrades Ingestion Job")
-    ingest_aggtrades(
+    run(
         spark,
         symbol,
         landing_date,

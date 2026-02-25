@@ -27,9 +27,9 @@ docker-stream-up:
 	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml up -d
 docker-stream-down:
 	docker-compose -p crypto-cloud-stream -f infras/docker/docker-compose.stream.yml down
-
 docker-bash-clickhouse:
 	docker exec -it crypto-cloud-clickhouse clickhouse-client -u $$CLICKHOUSE_USER --password $$CLICKHOUSE_PASSWORD --database $$CLICKHOUSE_DB
+
 ssh:
 	@ins="$(ins)"; \
 	[ -z "$$ins" ] && ins="clickhouse"; \

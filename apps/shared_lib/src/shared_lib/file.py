@@ -30,13 +30,6 @@ def download_file(url, file_path) -> str:
         )
         return file_path
 
-
-def remove_file(file_path):
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        logger.info(f"{file_path} removed")
-
-
 def extract_file(extract_dir, zip_path) -> None:
     if not os.path.exists(zip_path):
         logger.info(f"{zip_path} not found")
@@ -47,3 +40,9 @@ def extract_file(extract_dir, zip_path) -> None:
         zip_ref.extractall(extract_dir)
         end_t = time.time()
         logger.info(f"Extracted {zip_path} in {(end_t - start_t):.3f} seconds")
+
+
+def remove_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        logger.info(f"{file_path} removed")
