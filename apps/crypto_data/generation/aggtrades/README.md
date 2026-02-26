@@ -1,3 +1,4 @@
+```bash
 python main.py \
  --symbols '["ADAUSDT","SUIUSDT"]' \
  --landing_dates '["2025-09-27","2025-09-28"]'
@@ -44,3 +45,4 @@ kafka-console-consumer --bootstrap-server localhost:29092 \
 
 kafka-console-consumer --bootstrap-server localhost:29092 \
 --topic aggtrades-topic --partition 1 --from-beginning --max-messages 5
+```

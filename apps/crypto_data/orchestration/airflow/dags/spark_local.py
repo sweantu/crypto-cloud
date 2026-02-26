@@ -49,7 +49,6 @@ with DAG(
     },
     tags=["spark", "etl", "local"],
 ) as dag:
-    indicators_done = EmptyOperator(task_id="indicators_done")
     start = EmptyOperator(task_id="start")
 
     aggtrades = SparkSubmitOperator(
@@ -131,6 +130,8 @@ with DAG(
         conf=CONFIG,
         verbose=True,
     )
+
+    indicators_done = EmptyOperator(task_id="indicators_done")
 
     pattern_one = SparkSubmitOperator(
         task_id="pattern_one_spark_local",

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SQL_DIR=./init-scripts
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SQL_DIR="$SCRIPT_DIR/init-scripts"
 
 for f in $(ls "$SQL_DIR"/*.sql | sort); do
     echo "Running $f..."

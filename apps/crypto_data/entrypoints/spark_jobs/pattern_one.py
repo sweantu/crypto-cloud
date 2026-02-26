@@ -27,7 +27,9 @@ if __name__ == "__main__":
     iceberg_lock_table = args["iceberg_lock_table"]
     transform_db = args["transform_db"]
 
-    spark = get_spark_session(app_name="pattern_one_transform_job", iceberg=True)
+    spark = get_spark_session(
+        app_name="pattern_one_transform_job", local=True, minio=True, hive=True
+    )
 
     transform_db = f"hive_catalog.{transform_db}"
     run(spark, transform_db, symbol, landing_date)

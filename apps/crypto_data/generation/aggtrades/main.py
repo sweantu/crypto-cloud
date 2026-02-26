@@ -22,7 +22,7 @@ def run(symbols, landing_dates, producer, topic):
         f"Starting message production for symbols: {symbols} and landing_dates: {landing_dates}"
     )
 
-    # Download and extract files in parallel
+    # Download and extract files
     with ThreadPoolExecutor() as executor:
         start_t = time.time()
         script_dir = "/tmp/data/raw"
@@ -42,7 +42,7 @@ def run(symbols, landing_dates, producer, topic):
             f"Downloaded and extracted files in {(end_t - start_t):.2f} seconds"
         )
 
-    # Produce messages for each symbol and landing_date in parallel
+    # Produce messages for each symbol and landing_date
     for landing_date in landing_dates:
         with ThreadPoolExecutor() as executor:
             start_t = time.time()

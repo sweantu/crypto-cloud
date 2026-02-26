@@ -108,18 +108,18 @@ def create_indicator_view(
 
 
 def insert_indicators_clickhouse(
-    statement_set: StatementSet, indicators_sink: str, indicators_view: str
+    statement_set: StatementSet, indicators_sink_table: str, indicators_view: str
 ):
     statement_set.add_insert_sql(
-        f"INSERT INTO {indicators_sink} SELECT * FROM {indicators_view}"
+        f"INSERT INTO {indicators_sink_table} SELECT * FROM {indicators_view}"
     )
 
 
-def insert_indicators_kafka(
-    statement_set: StatementSet, indicators_sink: str, indicators_view: str
+def insert_indicators_stream(
+    statement_set: StatementSet, indicators_sink_table: str, indicators_view: str
 ):
     statement_set.add_insert_sql(
-        f"INSERT INTO {indicators_sink} SELECT * FROM {indicators_view} where `pattern` IS NOT NULL"
+        f"INSERT INTO {indicators_sink_table} SELECT * FROM {indicators_view} where `pattern` IS NOT NULL"
     )
 
 

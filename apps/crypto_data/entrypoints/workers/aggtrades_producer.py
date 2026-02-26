@@ -6,6 +6,7 @@ from shared_lib.kafka import KafkaProducer
 from shared_lib.kinesis import KinesisClient
 
 REGION = os.getenv("AWS_REGION")
+ENV = os.getenv("ENV", "local")
 
 if __name__ == "__main__":
     from generation.aggtrades.main import run
@@ -14,11 +15,11 @@ if __name__ == "__main__":
     symbols = json.loads(args["symbols"])
     landing_dates = json.loads(args["landing_dates"])
 
-    # kinesis producer
-    stream_name = os.getenv("AGGTRADES_STREAM_NAME", "")
-    kinesis_producer = KinesisClient(region=REGION)
-
-    # kafka producer
-    topic = "aggtrades-topic"
-    kafka_producer = KafkaProducer({"bootstrap.servers": "localhost:29092"})
-    run(symbols, landing_dates, kafka_producer, topic)
+    if ENV == "local":
+        topic = "aggtrades-topic"
+        kafka_producer = KafkaProducer({"bootstrap.servers": "localhost:29092"})
+        run(symbols, landing_dates, kafka_producer, topic)
+    else:
+        # kinesis producer
+        stream_name = os.getenv("AGGTRADES_STREAM_NAME", "")
+        kinesis_producer = KinesisClient(region=REGION)

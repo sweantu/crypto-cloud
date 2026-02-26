@@ -18,7 +18,6 @@ services:
     build:
       context: ./services/postgres
       dockerfile: Dockerfile
-    image: custom-postgres:15
     container_name: crypto-cloud-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -35,7 +34,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # - ./services/postgres/init-scripts:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
     networks:
       - crypto-cloud-network
@@ -44,7 +42,6 @@ services:
     build:
       context: ./services/hive
       dockerfile: Dockerfile
-    image: custom-hive:4.0.0
     container_name: crypto-cloud-hive-metastore
     environment:
       SERVICE_NAME: metastore

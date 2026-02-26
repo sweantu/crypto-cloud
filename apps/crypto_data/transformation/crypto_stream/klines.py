@@ -23,7 +23,7 @@ def create_klines_sink(t_env: StreamTableEnvironment, table_name: str, config: s
 def create_klines_view(
     t_env: StreamTableEnvironment,
     view_name: str,
-    aggtrades_source: str,
+    aggtrades_source_table: str,
 ):
     t_env.execute_sql(f"DROP TEMPORARY VIEW IF EXISTS {view_name}")
     t_env.execute_sql(f"""
@@ -39,13 +39,15 @@ def create_klines_view(
         ROUND(LAST_VALUE(price), 6) AS close_price,
         ROUND(SUM(quantity), 8) AS volume
     FROM TABLE(
-        TUMBLE(TABLE {aggtrades_source}, DESCRIPTOR(ts), INTERVAL '15' MINUTES)
+        TUMBLE(TABLE {aggtrades_source_table}, DESCRIPTOR(ts), INTERVAL '15' MINUTES)
     )
     GROUP BY window_start, window_end, symbol
     """)
 
 
-def insert_klines(statement_set: StatementSet, klines_sink: str, klines_view: str):
+def insert_klines(
+    statement_set: StatementSet, klines_sink_table: str, klines_view: str
+):
     statement_set.add_insert_sql(
-        f"INSERT INTO {klines_sink} SELECT * FROM {klines_view}"
+        f"INSERT INTO {klines_sink_table} SELECT * FROM {klines_view}"
     )

@@ -13,7 +13,7 @@ export TF_VAR_clickhouse_db=${CLICKHOUSE_DB}
 export TF_VAR_clickhouse_user=${CLICKHOUSE_USER}
 export TF_VAR_clickhouse_password=${CLICKHOUSE_PASSWORD}
 
-export TF_VAR_environment=${ENVIRONMENT}
+export TF_VAR_environment=${ENV}
 
 export TF_VAR_grafana_admin_username=${GRAFANA_ADMIN_USERNAME}
 export TF_VAR_grafana_admin_password=${GRAFANA_ADMIN_PASSWORD}
