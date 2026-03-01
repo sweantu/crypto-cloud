@@ -11,18 +11,18 @@ from shared_lib.flink import (
     get_table_environment,
     property_map,
 )
+from shared_lib.local import LOCAL_ENV, LOCAL_RUN
 from transformation.crypto_stream.main import run
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
-ENV = os.getenv("ENV", "")
 
 if __name__ == "__main__":
     t_env = get_table_environment(parallelism=1)
 
-    if ENV == "local":
+    if LOCAL_RUN:
         CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
         APPLICATION_PROPERTIES_FILE_PATH = os.path.join(
             CURRENT_DIR, "application_properties.json"
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     aggtrades_source_table = "aggtrades_source_table"
     configs[aggtrades_source_table] = (
         get_kafka_source_config(aggtrades_source_props)
-        if ENV == "local"
+        if LOCAL_ENV
         else get_kinesis_source_config(aggtrades_source_props)
     )
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     stream_indicators_sink_table = "stream_indicators_sink_table"
     configs[stream_indicators_sink_table] = (
         get_kafka_sink_config(stream_indicators_sink_props)
-        if ENV == "local"
+        if LOCAL_ENV
         else get_kinesis_sink_config(stream_indicators_sink_props)
     )
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         stream_indicators_sink_table=stream_indicators_sink_table,
     )
 
-    if ENV == "local":
-        statement_set.execute().wait()  # block only locally
+    if LOCAL_RUN:
+        statement_set.execute().wait()
     else:
-        statement_set.execute()  # non-blocking in KDA
+        statement_set.execute()

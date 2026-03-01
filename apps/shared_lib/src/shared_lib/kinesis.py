@@ -32,7 +32,12 @@ class KinesisClient:
         except Exception as e:
             self.delivery_report(e, None)
 
-    def consume_messages(self, iterator_type, records_per_shard, stream_name):
+    def consume_messages(
+        self,
+        stream_name: str,
+        iterator_type="TRIM_HORIZON",
+        records_per_shard=500,
+    ):
         logger.info("👂 Listening for messages...\n")
         shard_iters = self.get_shard_iters(iterator_type, stream_name)
         try:

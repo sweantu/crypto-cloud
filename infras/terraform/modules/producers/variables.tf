@@ -26,10 +26,6 @@ variable "aggtrades_producer_repo_url" {
   type = string
 }
 
-variable "aggtrades_stream_name" {
-  type = string
-}
-
 variable "default_symbols" {
   type    = string
   default = "[\"ADAUSDT\"]"

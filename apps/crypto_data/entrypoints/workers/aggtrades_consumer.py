@@ -3,25 +3,21 @@ import os
 from serving.aggtrades.main import run
 from shared_lib.kafka import KafkaConsumer
 from shared_lib.kinesis import KinesisClient
-from shared_lib.sqs import SQSClient
-
-REGION = os.getenv("AWS_REGION", "")
-NUM_OF_RECORDS = 500
-MODE = "TRIM_HORIZON"  # or "LATEST"
-ENV = os.getenv("ENV", "local")
+from shared_lib.local import LOCAL_ENV
+from shared_lib.name import get_stream_name
 
 if __name__ == "__main__":
-    if ENV == "local":
-        topic = "aggtrades-topic"
-        kafka_consumer = KafkaConsumer(
+    topic = get_stream_name("aggtrades-stream")
+    if LOCAL_ENV:
+        consumer = KafkaConsumer(
             {
                 "bootstrap.servers": "localhost:29092",
                 "group.id": "test-group",
                 "auto.offset.reset": "earliest",
             }
         )
-        run(kafka_consumer, topic)
     else:
-        kinesis_consumer = KinesisClient(region=REGION)
-        sqs_consumer = SQSClient(region=REGION)
+        region = os.getenv("AWS_REGION", "")
+        consumer = KinesisClient(region=region)
+    run(consumer, topic=topic)
 

@@ -84,9 +84,6 @@ resource "aws_ecs_task_definition" "airflow_task" {
         { name = "AIRFLOW_ADMIN_USERNAME", value = var.airflow_admin_username },
         { name = "AIRFLOW_ADMIN_PASSWORD", value = var.airflow_admin_password },
         { name = "AIRFLOW_ADMIN_EMAIL", value = var.airflow_admin_email },
-        { name = "GLUE_LANDING_JOB", value = var.landing_job_name },
-        { name = "GLUE_TRANSFORM_JOB", value = var.transform_job_name },
-        { name = "GLUE_TRANSFORM_JOB_PATTERN_TWO", value = var.transform_job_pattern_two_name },
       ]
       logConfiguration = {
         logDriver = "awslogs"

@@ -1,2 +1,2 @@
-application_properties.json
+application_properties*.json
 dependency-reduced-pom.xml

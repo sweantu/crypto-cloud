@@ -28,4 +28,4 @@ def run(spark, symbol, landing_date, data_lake_bucket, upload_file):
 
     remove_file(csv_path)
     remove_file(zip_path)
-    logger.info(f"✅ Successfully ingested aggtrades data in {write_url} ")
+    logger.info(f"✅ Successfully ingested aggtrades data in {write_url} ahihi")

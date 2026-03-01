@@ -11,11 +11,8 @@ from shared_lib.file import download_file, extract_file, make_dir, remove_file
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-QUEUE_URL = os.getenv("AGGTRADES_QUEUE_URL", "")
-REGION = os.getenv("AWS_REGION")
 DURATION = 60 * 1  # seconds
-MAX_MESSAGES = 500
+MAX_RECORDS = 500
 
 def run(symbols, landing_dates, producer, topic):
     logger.info(
@@ -98,7 +95,7 @@ def produce_messages(
 ) -> None:
     num_lines = int(subprocess.check_output(["wc", "-l", csv_path]).split()[0])
     logger.info(f"Processing file: {csv_path}, total lines: {num_lines}")
-    number_of_records = min(MAX_MESSAGES, int(num_lines / DURATION))
+    number_of_records = min(MAX_RECORDS, int(num_lines / DURATION))
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.reader(f)
         messages = []

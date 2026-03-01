@@ -21,9 +21,6 @@ resource "aws_s3_bucket_ownership_controls" "data_lake_bucket" {
   }
 }
 
-# -----------------------------
-# DynamoDB table for Iceberg locking
-# -----------------------------
 resource "aws_dynamodb_table" "iceberg_lock_table" {
   name         = var.iceberg_lock_table_name
   billing_mode = "PAY_PER_REQUEST"

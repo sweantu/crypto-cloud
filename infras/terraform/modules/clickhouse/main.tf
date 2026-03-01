@@ -85,7 +85,7 @@ usermod -aG docker ubuntu
 
 sleep 30
 
-docker run -d --name clickhouse \
+docker run -d --name crypto-cloud-clickhouse \
   -p 8123:8123 -p 9000:9000 \
   -e CLICKHOUSE_DB="${var.clickhouse_db}" \
   -e CLICKHOUSE_USER="${var.clickhouse_user}" \
@@ -93,13 +93,13 @@ docker run -d --name clickhouse \
   -v /var/lib/clickhouse:/var/lib/clickhouse \
   clickhouse/clickhouse-server:25.5.1
 
-docker update --restart=always clickhouse
+docker update --restart=always crypto-cloud-clickhouse
 
 echo "Waiting for ClickHouse..."
 sleep 30
 
-docker exec clickhouse clickhouse-client --query "SELECT version();" >/tmp/ch_version.txt 2>&1 || \
-  docker logs clickhouse | tail -n 50
+docker exec crypto-cloud-clickhouse clickhouse-client --query "SELECT version();" >/tmp/ch_version.txt 2>&1 || \
+  docker logs crypto-cloud-clickhouse | tail -n 50
 
 EOF
 

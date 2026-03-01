@@ -70,10 +70,6 @@ resource "aws_ecs_task_definition" "aggtrades_producer_task" {
 
       environment = [
         {
-          name  = "AGGTRADES_STREAM_NAME"
-          value = var.aggtrades_stream_name
-        },
-        {
           name  = "REGION"
           value = var.region
         }

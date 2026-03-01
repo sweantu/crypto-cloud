@@ -35,7 +35,6 @@ services:
     build:
       context: ./services/airflow
       dockerfile: Dockerfile
-    image: custom-airflow:2.10.3-python3.11
     container_name: crypto-cloud-airflow
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -47,6 +46,10 @@ services:
 
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_REGION: ${AWS_REGION}
     ports:
       - "8082:8080"
     networks:
@@ -58,8 +61,8 @@ services:
       airflow webserver &
       airflow scheduler
       "
-    # volumes:
-    #   - ./airflow/dags:/opt/airflow/dags
+    volumes:
+      - ./services/airflow/dags:/opt/airflow/dags
 
 networks:
   crypto-cloud-network:

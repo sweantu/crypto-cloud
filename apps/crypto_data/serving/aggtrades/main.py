@@ -1,2 +1,2 @@
 def run(consumer, topic):
-    consumer.consume_messages(topic=topic)
+    consumer.consume_messages(topic)

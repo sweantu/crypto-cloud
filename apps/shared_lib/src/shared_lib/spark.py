@@ -7,7 +7,7 @@ from pyspark.sql import SparkSession
 def get_spark_session(
     app_name: str,
     master: bool = False,
-    local: bool = False,
+    local_run: bool = False,
     minio: bool = False,
     hive: bool = False,
     jars: bool = False,
@@ -21,7 +21,7 @@ def get_spark_session(
 
     if master:
         spark = add_master_config(spark)
-    if local:
+    if local_run:
         spark = add_local_config(spark)
     if minio:
         spark = add_minio_config(spark)
@@ -50,12 +50,15 @@ def add_local_config(spark: SparkSession.Builder) -> SparkSession.Builder:
         spark.config("spark.sql.parquet.enableVectorizedReader", "false")
         .config("spark.sql.columnVector.offheap.enabled", "false")
         .config("spark.memory.offHeap.enabled", "false")
-        .config(
-            "spark.sql.catalog.glue_catalog.read.parquet.vectorization.enabled", "false"
-        )
         .config("spark.driver.memory", "2g")
         .config("spark.driver.extraJavaOptions", "-XX:MaxDirectMemorySize=1g")
         .config("spark.sql.codegen.wholeStage", "false")
+        .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config(
+            "spark.sql.catalog.glue_catalog.read.parquet.vectorization.enabled", "false"
+        )
     )
 
 
@@ -75,9 +78,6 @@ def add_minio_config(spark: SparkSession.Builder) -> SparkSession.Builder:
             f"{os.getenv('MINIO_PASSWORD', 'admin123')}",
         )
         .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000")
-        .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.path.style.access", "true")
     )
 
 
@@ -99,6 +99,7 @@ def add_hive_catalog_config(spark: SparkSession.Builder) -> SparkSession.Builder
             "spark.sql.catalog.hive_catalog.uri",
             "thrift://localhost:9083",
         )
+        .config("spark.sql.defaultCatalog", "hive_catalog")
     )
 
 
@@ -115,6 +116,7 @@ def add_glue_catalog_config(
             "org.apache.iceberg.aws.glue.GlueCatalog",
         )
         .config("spark.sql.catalog.glue_catalog.lock.table", f"{iceberg_lock_table}")
+        .config("spark.sql.defaultCatalog", "glue_catalog")
     )
 
 def add_jars_config(spark: SparkSession.Builder) -> SparkSession.Builder:

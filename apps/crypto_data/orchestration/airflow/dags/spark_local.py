@@ -20,7 +20,6 @@ PATTERN_TWO_APP = f"{APP_DIR}/pattern_two.py"
 PATTERN_THREE_APP = f"{APP_DIR}/pattern_three.py"
 CONN_ID = "spark_local"
 CONFIG = {
-    "spark.master": "local[*]",
     "spark.jars.packages": ",".join(
         [
             "org.apache.hadoop:hadoop-aws:3.3.4",
@@ -40,7 +39,7 @@ with DAG(
     dag_id="spark_local",
     default_args=default_args,
     description="ETL DAG using Spark on localhost",
-    schedule_interval="0 0 * * *",
+    schedule_interval=None,
     start_date=datetime(2025, 9, 24),
     catchup=False,
     max_active_runs=1,

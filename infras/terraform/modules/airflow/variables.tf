@@ -60,14 +60,3 @@ variable "airflow_admin_email" {
   sensitive = true
 }
 
-variable "landing_job_name" {
-  type = string
-}
-
-variable "transform_job_name" {
-  type = string
-}
-
-variable "transform_job_pattern_two_name" {
-  type = string
-}

@@ -21,3 +21,7 @@ export TF_VAR_grafana_admin_password=${GRAFANA_ADMIN_PASSWORD}
 export TF_VAR_project=${PROJECT}
 
 export TF_VAR_ssh_key=${SSH_KEY}
+
+export TF_VAR_data_lake_bucket=${DATA_LAKE_BUCKET}
+export TF_VAR_iceberg_lock_table=${ICEBERG_LOCK_TABLE}
+export TF_VAR_transform_db=${TRANSFORM_DB}

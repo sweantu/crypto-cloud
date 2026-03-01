@@ -59,11 +59,11 @@ table_env.get_config().get_configuration().set_string(
 # application configuration.
 APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
 
-# Set the environment variable FLINK_LOCAL=true in your local development environment,
+# Set the environment variable RUN_LOCAL=true in your local development environment,
 # or in the run profile of your IDE: the application relies on this variable to run in local mode (as a standalone
 # Python application, as opposed to running in a Flink cluster).
 # Differently from Java Flink, PyFlink cannot automatically detect when running in local mode
-is_local = True if os.environ.get("FLINK_LOCAL") else False
+is_local = True if os.environ.get("RUN_LOCAL") else False
 
 ##############################################
 # 2. Set special configuration for local mode

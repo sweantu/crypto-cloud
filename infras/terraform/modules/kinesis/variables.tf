@@ -1,12 +1,8 @@
-variable "shard_count" {
-  type    = number
-  default = 1
-}
-variable "retention_hours" {
-  type    = number
-  default = 24
-}
-
-variable "project_prefix" {
-  type = string
+variable "streams_props_map" {
+  description = "A map of Kinesis stream names to their properties (shard count and retention hours)"
+  type = map(object({
+    name            = string
+    shard_count     = number
+    retention_hours = number
+  }))
 }

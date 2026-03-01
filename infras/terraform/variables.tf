@@ -6,6 +6,18 @@ variable "aws_region" {
   type = string
 }
 
+variable "data_lake_bucket" {
+  type = string
+}
+
+variable "iceberg_lock_table" {
+  type = string
+}
+
+variable "transform_db" {
+  type = string
+}
+
 variable "airflow_db_username" {
   type = string
 }
