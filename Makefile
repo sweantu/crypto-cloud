@@ -19,6 +19,12 @@ docker-stream-storage-up:
 docker-stream-storage-down:
 	docker-compose -p crypto-cloud-stream-storage -f infras/docker/docker-compose.stream-storage.yml down
 
+docker-stream-processing-up:
+	docker-compose -p crypto-cloud-stream-processing -f infras/docker/docker-compose.stream-processing.yml up -d --remove-orphans
+
+docker-stream-processing-down:
+	docker-compose -p crypto-cloud-stream-processing -f infras/docker/docker-compose.stream-processing.yml down
+
 docker-minio-create-bucket:
 	docker exec -i crypto-cloud-minio sh -c '\
 		mc alias set local http://localhost:9000 $(MINIO_USER) $(MINIO_PASSWORD) && \
