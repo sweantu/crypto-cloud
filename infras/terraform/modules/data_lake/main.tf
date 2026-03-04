@@ -3,7 +3,6 @@ resource "aws_s3_bucket" "data_lake_bucket" {
   force_destroy = true
 }
 
-# Block public access
 resource "aws_s3_bucket_public_access_block" "data_lake_bucket" {
   bucket                  = aws_s3_bucket.data_lake_bucket.id
   block_public_acls       = true
@@ -12,7 +11,6 @@ resource "aws_s3_bucket_public_access_block" "data_lake_bucket" {
   restrict_public_buckets = true
 }
 
-# Enable bucket ownership for Spark/Hadoop compatibility
 resource "aws_s3_bucket_ownership_controls" "data_lake_bucket" {
   bucket = aws_s3_bucket.data_lake_bucket.id
 

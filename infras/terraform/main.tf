@@ -35,41 +35,6 @@ module "data_lake" {
 }
 
 locals {
-  aggtrades_stream_name  = "${local.project_prefix}-aggtrades-stream"
-  indicators_stream_name = "${local.project_prefix}-indicators-stream"
-}
-module "kinesis" {
-  source = "./modules/kinesis"
-  streams_props_map = {
-    "aggtrades-stream" = {
-      name            = local.aggtrades_stream_name
-      shard_count     = 1
-      retention_hours = 24
-    },
-    "indicators-stream" = {
-      name            = local.indicators_stream_name
-      shard_count     = 1
-      retention_hours = 24
-    }
-  }
-}
-
-module "clickhouse" {
-  source                   = "./modules/clickhouse"
-  vpc_id                   = module.vpc.vpc_id
-  subnet_id                = module.vpc.public_subnet_ids[0]
-  clickhouse_sg_name       = "${local.project_prefix}-clickhouse-sg"
-  clickhouse_instance_name = "${local.project_prefix}-clickhouse-instance"
-  clickhouse_db            = var.clickhouse_db
-  clickhouse_user          = var.clickhouse_user
-  clickhouse_password      = var.clickhouse_password
-  clickhouse_instance_type = "t3.medium"
-  clickhouse_ami_id        = "ami-0827b3068f1548bf6"
-  clickhouse_volume_size   = 50
-  ssh_key                  = var.ssh_key
-}
-
-locals {
   glue_jobs_directory = "${local.data_lake_bucket_name}/glue_scripts"
 }
 module "glue" {
@@ -114,13 +79,6 @@ module "glue" {
   }
 }
 
-module "athena" {
-  source                = "./modules/athena"
-  athena_workgroup_name = "${local.project_prefix}-athena-wg"
-  data_lake_bucket_name = module.data_lake.data_lake_bucket_name
-  athena_output_prefix  = "athena_output/"
-}
-
 module "ecr" {
   source = "./modules/ecr"
 
@@ -162,32 +120,70 @@ module "airflow" {
   airflow_admin_email    = var.airflow_admin_email
 }
 
-module "scripts" {
-  source = "./modules/scripts"
+module "athena" {
+  source                = "./modules/athena"
+  athena_workgroup_name = "${local.project_prefix}-athena-wg"
+  data_lake_bucket_name = local.data_lake_bucket_name
+  athena_output_prefix  = "athena_output/"
+}
 
-  project_prefix = local.project_prefix
+locals {
+  aggtrades_stream_name  = "${local.project_prefix}-aggtrades-stream"
+  indicators_stream_name = "${local.project_prefix}-indicators-stream"
+}
+module "kinesis" {
+  source = "./modules/kinesis"
+  streams_props_map = {
+    "aggtrades-stream" = {
+      name            = local.aggtrades_stream_name
+      shard_count     = 1
+      retention_hours = 24
+    },
+    "indicators-stream" = {
+      name            = local.indicators_stream_name
+      shard_count     = 1
+      retention_hours = 24
+    }
+  }
+}
+
+module "clickhouse" {
+  source                   = "./modules/clickhouse"
+  vpc_id                   = module.vpc.vpc_id
+  subnet_id                = module.vpc.public_subnet_ids[0]
+  clickhouse_sg_name       = "${local.project_prefix}-clickhouse-sg"
+  clickhouse_instance_name = "${local.project_prefix}-clickhouse-instance"
+  clickhouse_db            = var.clickhouse_db
+  clickhouse_user          = var.clickhouse_user
+  clickhouse_password      = var.clickhouse_password
+  clickhouse_instance_type = "t3.medium"
+  clickhouse_ami_id        = "ami-0827b3068f1548bf6"
+  clickhouse_volume_size   = 50
+  ssh_key                  = var.ssh_key
 }
 
 module "flink" {
   source = "./modules/flink"
 
-  project_prefix = local.project_prefix
-  region         = var.aws_region
-  stream_arns = tomap({
-    "ExampleInputStream"  = module.kinesis.stream_info_map["aggtrades-stream"].arn,
-    "ExampleOutputStream" = module.kinesis.stream_info_map["indicators-stream"].arn
-  })
-  scripts_bucket_arn = module.scripts.flink_scripts_bucket_arn
-  data_lake_bucket   = module.data_lake.data_lake_bucket_name
+  project_prefix     = local.project_prefix
+  region             = var.aws_region
+  scripts_bucket_arn = module.data_lake.data_lake_bucket_arn
+  stream_info_map    = module.kinesis.stream_info_map
+  clickhouse_info = {
+    url      = "clickhouse://${module.clickhouse.clickhouse_instance_public_ip}:8123"
+    database = var.clickhouse_db
+    username = var.clickhouse_user
+    password = var.clickhouse_password
+  }
 }
 
-# module "lambda" {
-#   source = "./modules/lambda"
+module "lambda" {
+  source = "./modules/lambda"
 
-#   project_prefix      = local.project_prefix
-#   kinesis_stream_name = module.kinesis.stream_info_map["aggtrades-stream"].name
-#   region              = var.aws_region
-# }
+  project_prefix      = local.project_prefix
+  kinesis_stream_name = module.kinesis.stream_info_map["aggtrades-stream"].name
+  region              = var.aws_region
+}
 
 module "producers" {
   source = "./modules/producers"

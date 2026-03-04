@@ -34,14 +34,6 @@ output "iceberg_lock_table_name" {
   value = local.iceberg_lock_table_name
 }
 
-output "stream_info_map" {
-  value = module.kinesis.stream_info_map
-}
-
-output "clickhouse_instance_id" {
-  value = module.clickhouse.clickhouse_instance_id
-}
-
 output "glue_scripts_directory" {
   value = local.glue_jobs_directory
 }
@@ -66,18 +58,29 @@ output "airflow_ecs_service_name" {
   value = module.airflow.airflow_ecs_service_name
 }
 
-
-output "flink_scripts_bucket_name" {
-  value = module.scripts.flink_scripts_bucket_name
+output "athena_output_location" {
+  value = module.athena.athena_output_location
 }
 
-# output "lambda_role_arn" {
-#   value = module.lambda.lambda_role_arn
-# }
+output "athena_wg_name" {
+  value = module.athena.athena_wg_name
+}
 
-# output "aggtrades_producer_lambda_name" {
-#   value = module.lambda.aggtrades_producer_lambda_name
-# }
+output "stream_info_map" {
+  value = module.kinesis.stream_info_map
+}
+
+output "clickhouse_instance_id" {
+  value = module.clickhouse.clickhouse_instance_id
+}
+
+output "lambda_role_arn" {
+  value = module.lambda.lambda_role_arn
+}
+
+output "aggtrades_producer_lambda_name" {
+  value = module.lambda.aggtrades_producer_lambda_name
+}
 
 output "aggtrades_producer_service_name" {
   value = module.producers.aggtrades_producer_service_name
@@ -99,12 +102,4 @@ output "crypto_sqs_dlq_url" {
 }
 output "crypto_sqs_dlq_arn" {
   value = module.sqs.crypto_sqs_dlq_arn
-}
-
-output "athena_wg_name" {
-  value = module.athena.athena_wg_name
-}
-
-output "athena_output_location" {
-  value = module.athena.athena_output_location
 }

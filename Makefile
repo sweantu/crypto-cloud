@@ -74,6 +74,13 @@ build-artifacts:
 airflow-start:
 	bash apps/crypto_data/orchestration/airflow/entrypoint.sh
 
+airflow-build:
+	docker build -f apps/crypto_data/orchestration/airflow/Dockerfile -t custom-airflow:2.10.5 .
+airflow-ecs-up::
+	docker-compose -p crypto-cloud-airflow -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml up -d --remove-orphans
+airflow-ecs-down:
+	docker-compose -p crypto-cloud-airflow -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml down
+
 terraform-init:
 	cd infras/terraform && terraform init
 terraform-plan:
@@ -87,67 +94,27 @@ terraform-output:
 terraform-var:
 	terraform output -state=$(TF_STATE) -raw $(var)
 
-ec2-ip:
-	instance_id="$$( $(MAKE) -s terraform-var var=$(ins)_instance_id )"; \
-	aws ec2 describe-instances --instance-ids "$$instance_id" \
-	  --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
+glue-scripts-build:
+	make build-artifacts dir=spark_jobs job=$(job) stage=$(stage)
+glue-scripts-upload:
+	aws s3 cp build/spark_jobs/$(job)_libs.zip s3://$(GLUE_SCRIPTS_DIRECTORY)
+	aws s3 cp apps/crypto_data/entrypoints/spark_jobs/$(job).py s3://$(GLUE_SCRIPTS_DIRECTORY)
 
-ec2-ssh:
-	instance_ip="$$($(MAKE) -s ec2-ip ins=$(ins))"; \
-	ssh -i ~/.ssh/$$SSH_KEY ubuntu$$instance_ip
+repo-url:
+	@jq -r '.$(repo)' <<< '$(ECR_REPOSITORY_URLS)'
 
-ec2-log:
-	instance_ip="$$($(MAKE) -s ec2-ip ins=$(ins))"; \
-	ssh -i ~/.ssh/$$SSH_KEY ubuntu$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
-
-ec2-stop:
-	instance_id="$$( $(MAKE) -s terraform-var var=$(ins)_instance_id )"; \
-	aws ec2 stop-instances --instance-ids $$instance_id
-
-ec2-start:
-	instance_id="$$( $(MAKE) -s terraform-var var=$(ins)_instance_id )"; \
-	aws ec2 start-instances --instance-ids $$instance_id
-
-ec2-describe:
-	instance_id="$$( $(MAKE) -s terraform-var var=$(ins)_instance_id )"; \
-	aws ec2 describe-instances --instance-ids $$instance_id --query "Reservations[0].Instances[]" --output table
-
-ec2-run:
-	instance_ip="$$($(MAKE) -s ec2-ip ins=$(ins))"; \
-	ssh -t -i "$$HOME/.ssh/$(SSH_KEY)" ubuntu$$instance_ip '$(cmd)'
-
-ec2-clickhouse:
-	$(MAKE) -s ec2-run ins=clickhouse \
-		cmd='\
-		cd clickhouse && \
-		set -a && . ./env.sh && set +a && \
-		docker exec -it crypto-cloud-clickhouse clickhouse-client -u $$$$CLICKHOUSE_USER --password $$$$CLICKHOUSE_PASSWORD --database $$$$CLICKHOUSE_DB \
-		'
-ec2-clickhouse2:
-	$(MAKE) -s ec2-run ins=clickhouse \
-		cmd='\
-		docker exec -it crypto-cloud-clickhouse clickhouse-client -u $(CLICKHOUSE_USER) --password $(CLICKHOUSE_PASSWORD) --database $(CLICKHOUSE_DB) \
-		'
-ec2-rsync:
-	instance_ip="$$($(MAKE) -s ec2-ip ins=$(ins))"; \
-	rsync -avz -e "ssh -i ~/.ssh/$$SSH_KEY" $(src) ubuntu$$instance_ip:/home/ubuntu/$(dst)
-
-glue-scripts-sync:
-	aws s3 sync build/spark_jobs s3://$(GLUE_SCRIPTS_DIRECTORY)
-	aws s3 sync apps/crypto_data/entrypoints/spark_jobs s3://$(GLUE_SCRIPTS_DIRECTORY)
-
-
-push-image:
+ecr-build-and-push:
+	repo_url=$$(make repo-url repo=$(repo)); \
 	aws ecr get-login-password --region $(AWS_REGION) | \
-	    docker login --username AWS --password-stdin $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com ; \
+	    docker login --username AWS --password-stdin $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com; \
 	docker buildx build \
 	  --platform linux/amd64 \
-	  -f apps/crypto_data/orchestration/airflow/Dockerfile \
-	  -t $(REPO_URL):latest \
+	  -f $(file) \
+	  -t $$repo_url:latest \
 	  --push .
 
 ecs-logs:
-	aws logs tail /ecs/$(TASK) | tail -200
+	aws logs tail /ecs/$(task) | tail -200
 
 rds-describe:
 	aws rds describe-db-instances \
@@ -158,8 +125,59 @@ rds-describe:
 rds-stop:
 	aws rds stop-db-instance --db-instance-identifier $(db_instance_identifier)
 
-start-rds:
+rds-start:
 	aws rds start-db-instance --db-instance-identifier $(db_instance_identifier)
+
+ec2-ip:
+	@instance_id=$$($(MAKE) -s terraform-var var=$(ins)_instance_id ); \
+	aws ec2 describe-instances --instance-ids $$instance_id \
+	  --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
+
+ec2-ssh:
+	@instance_ip=$$($(MAKE) -s ec2-ip ins=$(ins)); \
+	ssh -i ~/.ssh/$$SSH_KEY ubuntu@$$instance_ip
+
+ec2-log:
+	instance_ip=$$($(MAKE) -s ec2-ip ins=$(ins)); \
+	ssh -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip "sudo cat /var/log/cloud-init-output.log | tail -200"
+
+ec2-stop:
+	instance_id=$$( $(MAKE) -s terraform-var var=$(ins)_instance_id ); \
+	aws ec2 stop-instances --instance-ids $$instance_id
+
+ec2-start:
+	instance_id=$$( $(MAKE) -s terraform-var var=$(ins)_instance_id ); \
+	aws ec2 start-instances --instance-ids $$instance_id
+
+ec2-describe:
+	instance_id=$$( $(MAKE) -s terraform-var var=$(ins)_instance_id ); \
+	aws ec2 describe-instances --instance-ids $$instance_id --query "Reservations[0].Instances[]" --output table
+
+ec2-run:
+	instance_ip=$$($(MAKE) -s ec2-ip ins=$(ins)); \
+	ssh -t -i ~/.ssh/$(SSH_KEY) ubuntu@$$instance_ip '$(cmd)'
+
+ec2-clickhouse-client:
+	$(MAKE) -s ec2-run ins=clickhouse \
+		cmd='\
+		docker exec -it crypto-cloud-clickhouse clickhouse-client -u $(CLICKHOUSE_USER) --password $(CLICKHOUSE_PASSWORD) --database $(CLICKHOUSE_DB) \
+		'
+ec2-rsync:
+	instance_ip=$$($(MAKE) -s ec2-ip ins=$(ins)); \
+	rsync -avz -e "ssh -i ~/.ssh/$$SSH_KEY" $(src) ubuntu@$$instance_ip:/home/ubuntu/$(dst)
+
+flink-scripts-build:
+	make build-artifacts dir=flink_jobs job=$(job) stage=$(stage)
+	rm -rf build/tmp && mkdir -p build/tmp/lib
+	cp build/flink_jobs/$(job)_libs.zip build/tmp/lib
+	cd apps/crypto_data/entrypoints/flink_jobs/$(job) && mvn package
+	cp apps/crypto_data/entrypoints/flink_jobs/$(job)/target/pyflink-dependencies.jar build/tmp/lib
+	cp apps/crypto_data/entrypoints/flink_jobs/$(job)/main.py build/tmp
+	make zip dst=flink_jobs/$(job).zip
+
+flink-scripts-upload:
+	aws s3 cp build/flink_jobs/$(job).zip s3://$(DATA_LAKE_BUCKET)/flink_scripts/$(job).zip
+
 
 invoke-lambda:
 	aws lambda invoke \

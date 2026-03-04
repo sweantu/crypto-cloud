@@ -6,14 +6,22 @@ variable "region" {
   type = string
 }
 
-variable "stream_arns" {
-  type = map(string)
-}
-
 variable "scripts_bucket_arn" {
   type = string
 }
 
-variable "data_lake_bucket" {
-  type = string
+variable "stream_info_map" {
+  type = map(object({
+    name = string
+    arn  = string
+  }))
+}
+
+variable "clickhouse_info" {
+  type = object({
+    url      = string
+    database = string
+    username = string
+    password = string
+  })
 }

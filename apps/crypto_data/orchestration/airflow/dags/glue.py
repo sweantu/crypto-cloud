@@ -62,7 +62,7 @@ with DAG(
 
     pattern_two = GlueJobOperator(
         task_id="pattern_two_glue_job",
-        job_name=get_glue_job_name("pattern_two"),
+        job_name=get_glue_job_name("pattern-two"),
         script_args={
             "--symbol": "{{ params.symbol }}",
             "--landing_date": "{{ ds }}",

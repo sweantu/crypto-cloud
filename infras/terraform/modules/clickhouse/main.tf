@@ -8,7 +8,7 @@ resource "aws_security_group" "clickhouse_sg" {
     from_port   = 8123
     to_port     = 8123
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Restrict later to your VPC or Grafana
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {

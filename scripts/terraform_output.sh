@@ -14,6 +14,6 @@ export TRANSFORM_DB=$(terraform output -state=$TF_STATE -raw transform_db_name)
 
 export GLUE_SCRIPTS_DIRECTORY=$(terraform output -state=$TF_STATE -raw glue_scripts_directory)
 
-# export AGGTRADES_STREAM=$(terraform output -state=$TF_STATE -json stream_info_map | jq -r ".\"$AGGTRADES_STREAM\".name")
-# export INDICATORS_STREAM=$(terraform output -state=$TF_STATE -json stream_info_map | jq -r ".\"$INDICATORS_STREAM\".name")
-# export ATHENA_OUTPUT_LOCATION=$(terraform output -state=$TF_STATE -raw athena_output_location)
+export ECR_REPOSITORY_URLS=$(terraform output -state=$TF_STATE -json ecr_repository_urls)
+
+export ATHENA_OUTPUT_LOCATION=$(terraform output -state=$TF_STATE -raw athena_output_location)

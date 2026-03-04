@@ -79,11 +79,26 @@ resource "aws_ecs_task_definition" "airflow_task" {
         { name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN", value = "postgresql+psycopg2://${var.airflow_db_username}:${var.airflow_db_password}@${aws_db_instance.airflow_db.address}:5432/${var.airflow_db_name}" },
         { name = "AIRFLOW__CORE__FERNET_KEY", value = var.airflow_fernet_key },
         { name = "AIRFLOW__CORE__LOAD_EXAMPLES", value = "False" },
-        { name = "AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL", value = "10" },
         { name = "AIRFLOW__CORE__DEFAULT_TIMEZONE", value = "UTC" },
+
+        { name = "AIRFLOW__CORE__PARALLELISM", value = "4" },
+        { name = "AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG", value = "2" },
+        { name = "AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG", value = "1" },
+
+        { name = "AIRFLOW__WEBSERVER__WORKERS", value = "1" },
+        { name = "AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT", value = "300" },
+        { name = "AIRFLOW__WEBSERVER__WORKER_TIMEOUT", value = "300" },
+
+        { name = "AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL", value = "60" },
+        { name = "AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL", value = "60" },
+        { name = "AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY", value = "16" },
+
         { name = "AIRFLOW_ADMIN_USERNAME", value = var.airflow_admin_username },
         { name = "AIRFLOW_ADMIN_PASSWORD", value = var.airflow_admin_password },
         { name = "AIRFLOW_ADMIN_EMAIL", value = var.airflow_admin_email },
+
+        { name = "AWS_REGION", value = var.region },
+        { name = "PROJECT_PREFIX", value = var.project_prefix }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -101,7 +116,7 @@ resource "aws_ecs_service" "airflow_service" {
   name                   = "airflow-service"
   cluster                = var.ecs_cluster_id
   task_definition        = aws_ecs_task_definition.airflow_task.arn
-  desired_count          = 0
+  desired_count          = 1
   launch_type            = "FARGATE"
   enable_execute_command = true
   platform_version       = "LATEST"
