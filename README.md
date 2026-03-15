@@ -31,6 +31,7 @@ Sample dashboard screenshot:
 ## What is in the codebase
 
 - Data lifecycle modules under `apps/crypto_data`:
+  - `entrypoints`: runtime entrypoints for Spark/Flink jobs and workers.
   - `generation`: market event generation (for example aggtrades producer flow).
   - `ingestion`: raw data ingestion jobs.
   - `transformation`: Spark/Flink transformations (`klines`, `macd`, `rsi`, `pattern_one/two/three`, `crypto_stream`).
