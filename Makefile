@@ -2,28 +2,28 @@ docker-network-create:
 	docker network create crypto-cloud-network
 
 docker-batch-storage-up:
-	docker-compose -p crypto-cloud-batch-storage -f infras/docker/docker-compose.batch-storage.yml up -d --remove-orphans
+	docker-compose -p crypto-cloud-batch-storage-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.batch-storage.yml up -d --remove-orphans
 
 docker-batch-storage-down:
-	docker-compose -p crypto-cloud-batch-storage -f infras/docker/docker-compose.batch-storage.yml down
+	docker-compose -p crypto-cloud-batch-storage-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.batch-storage.yml down
 
 docker-batch-processing-up:
-	docker-compose -p crypto-cloud-batch-processing -f infras/docker/docker-compose.batch-processing.yml up -d --remove-orphans
+	docker-compose -p crypto-cloud-batch-processing-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.batch-processing.yml up -d --remove-orphans
 
 docker-batch-processing-down:
-	docker-compose -p crypto-cloud-batch-processing -f infras/docker/docker-compose.batch-processing.yml down
+	docker-compose -p crypto-cloud-batch-processing-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.batch-processing.yml down
 
 docker-stream-storage-up:
-	docker-compose -p crypto-cloud-stream-storage -f infras/docker/docker-compose.stream-storage.yml up -d --remove-orphans
+	docker-compose -p crypto-cloud-stream-storage-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.stream-storage.yml up -d --remove-orphans
 
 docker-stream-storage-down:
-	docker-compose -p crypto-cloud-stream-storage -f infras/docker/docker-compose.stream-storage.yml down
+	docker-compose -p crypto-cloud-stream-storage-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.stream-storage.yml down
 
 docker-stream-processing-up:
-	docker-compose -p crypto-cloud-stream-processing -f infras/docker/docker-compose.stream-processing.yml up -d --remove-orphans
+	docker-compose -p crypto-cloud-stream-processing-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.stream-processing.yml up -d --remove-orphans
 
 docker-stream-processing-down:
-	docker-compose -p crypto-cloud-stream-processing -f infras/docker/docker-compose.stream-processing.yml down
+	docker-compose -p crypto-cloud-stream-processing-branch-$(BRANCH_NAME) -f infras/docker/docker-compose.stream-processing.yml down
 
 docker-minio-create-bucket:
 	docker exec -i crypto-cloud-minio sh -c '\
@@ -77,9 +77,9 @@ airflow-start:
 airflow-build:
 	docker build -f apps/crypto_data/orchestration/airflow/Dockerfile -t custom-airflow:2.10.5 .
 airflow-ecs-up::
-	docker-compose -p crypto-cloud-airflow -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml up -d --remove-orphans
+	docker-compose -p crypto-cloud-airflow-branch-$(BRANCH_NAME) -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml up -d --remove-orphans
 airflow-ecs-down:
-	docker-compose -p crypto-cloud-airflow -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml down
+	docker-compose -p crypto-cloud-airflow-branch-$(BRANCH_NAME) -f apps/crypto_data/orchestration/airflow/docker-compose.airflow.yml down
 
 terraform-init:
 	cd infras/terraform && terraform init
