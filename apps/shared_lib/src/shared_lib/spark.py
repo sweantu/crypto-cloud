@@ -15,8 +15,10 @@ def get_spark_session(
     iceberg_lock_table: str | None = None,
 ) -> SparkSession:
 
-    spark = SparkSession.builder.appName(app_name).config(  # type: ignore
-        "spark.sql.session.timeZone", "UTC"
+    spark = (
+        SparkSession.builder.appName(app_name)  # type: ignore
+        .config("spark.sql.session.timeZone", "UTC")
+        .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
     )
 
     if master:

@@ -39,12 +39,13 @@ with DAG(
     dag_id="spark_local",
     default_args=default_args,
     description="ETL DAG using Spark on localhost",
-    schedule_interval=None,
-    start_date=datetime(2025, 9, 24),
-    catchup=False,
+    schedule_interval="@daily",
+    start_date=datetime(2025, 9, 27),
+    end_date=datetime(2025, 10, 2),
+    catchup=True,
     max_active_runs=1,
     params={
-        "symbol": "ADAUSDT",
+        "symbol": "BTCUSDT",
     },
     tags=["spark", "etl", "local"],
 ) as dag:

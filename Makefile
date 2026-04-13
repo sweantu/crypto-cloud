@@ -43,8 +43,7 @@ SPARK_JOBS_DIR?=apps/crypto_data/entrypoints/spark_jobs
 spark-submit:
 	$(eval LIBS := $(if $(with_libs),--py-files build/spark_jobs/$(job)_libs.zip,))
 	$(eval ARGS :=)
-	$(eval ARGS += --symbol $(symbol))
-	$(eval ARGS += --landing_date $(landing_date))
+	$(eval ARGS += --date $(date))
 	$(eval ARGS += --data_lake_bucket $(data_lake_bucket))
 	$(eval ARGS += $(if $(transform_db),--transform_db $(transform_db),))
 	$(eval ARGS += $(if $(iceberg_lock_table),--iceberg_lock_table $(iceberg_lock_table),))
