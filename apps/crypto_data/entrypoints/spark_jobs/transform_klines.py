@@ -13,15 +13,13 @@ if __name__ == "__main__":
     from transformation.klines.main import run
 
     args_list = [
-        "symbol",
-        "landing_date",
+        "date",
         "data_lake_bucket",
         "transform_db",
         "iceberg_lock_table",
     ]
     args = get_args(args_list) if LOCAL_ENV else get_glue_args(args_list)
-    symbol = args["symbol"]
-    landing_date = args["landing_date"]
+    date = args["date"]
 
     data_lake_bucket = args["data_lake_bucket"]
     iceberg_lock_table = args["iceberg_lock_table"]
@@ -37,8 +35,6 @@ if __name__ == "__main__":
     )
     run(
         spark,
-        symbol,
-        landing_date,
-        data_lake_bucket=data_lake_bucket,
+        date,
         transform_db=transform_db,
     )
